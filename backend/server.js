@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
+import projectRoutes from "./routes/project.routes.js";
 
 dotenv.config();
 
@@ -18,6 +19,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.status(200).json({status: "Healthy"})
 })
+
+// Routes
+app.use("/api/projects", projectRoutes);
 
 const PORT = process.env.PORT || 5000;
 
