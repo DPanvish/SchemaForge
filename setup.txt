@@ -1,0 +1,86 @@
+Backend setup
+
+1. Created the backend package
+
+   Command:
+   cd backend
+   npm init -y
+
+   Why:
+   This creates package.json so the backend can track npm scripts, project metadata,
+   and installed dependencies.
+
+2. Enabled ES modules
+
+   package.json setting:
+   "type": "module"
+
+   Why:
+   This allows the backend to use modern import/export syntax instead of CommonJS
+   require/module.exports.
+
+3. Installed runtime dependencies
+
+   Command:
+   npm install express mongoose dotenv cors zod
+
+   Why these dependencies are used:
+   - express: Creates the HTTP API server and defines backend routes/middleware.
+   - mongoose: Connects the app to MongoDB and provides schemas/models for data.
+   - dotenv: Loads environment variables from a .env file, such as database URLs
+     and server configuration.
+   - cors: Allows the backend API to accept requests from a frontend running on a
+     different origin during development or deployment.
+   - zod: Validates request data and other runtime inputs with explicit schemas.
+
+4. Installed development dependency
+
+   Command:
+   npm install --save-dev nodemon
+
+   Why:
+   nodemon restarts the backend automatically when source files change, making
+   local development faster.
+
+
+Frontend setup
+
+1. Created the frontend React app
+
+   Command:
+   npm create vite@latest frontend -- --template react
+
+   Why:
+   This scaffolds a React frontend powered by Vite, including the basic project
+   structure, index.html, src folder, development scripts, and build tooling.
+
+2. Installed frontend dependencies
+
+   Command:
+   cd frontend
+   npm install
+
+   Why:
+   This installs the dependencies declared by the Vite React scaffold so the
+   frontend can run locally, build for production, and lint source files.
+
+   Runtime dependencies:
+   - react: Provides the component model and state/rendering system for building
+     the user interface.
+   - react-dom: Connects React components to the browser DOM so the app can render
+     inside index.html.
+
+   Development dependencies:
+   - vite: Runs the frontend development server and creates optimized production
+     builds.
+   - @vitejs/plugin-react: Adds React support to Vite, including JSX handling and
+     React refresh during development.
+   - eslint: Checks frontend source code for common mistakes and style issues.
+   - @eslint/js: Provides the base JavaScript ESLint rules used by the config.
+   - eslint-plugin-react-hooks: Enforces correct usage of React Hooks.
+   - eslint-plugin-react-refresh: Helps keep React Fast Refresh compatible by
+     warning about patterns that can break hot updates.
+   - globals: Provides known browser and JavaScript global variables for the ESLint
+     configuration.
+   - @types/react: Provides TypeScript type definitions for React APIs.
+   - @types/react-dom: Provides TypeScript type definitions for React DOM APIs.
