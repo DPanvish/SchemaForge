@@ -42,6 +42,32 @@ Backend setup
    nodemon restarts the backend automatically when source files change, making
    local development faster.
 
+5. Installed backend authentication and security dependencies
+
+   Command:
+   npm install bcryptjs express-mongo-sanitize express-rate-limit helmet jsonwebtoken
+
+   Why these dependencies are used:
+   - bcryptjs: Hashes passwords before storing them and compares login passwords
+     against saved hashes.
+   - express-mongo-sanitize: Removes MongoDB operator characters from incoming
+     request data to reduce NoSQL injection risk.
+   - express-rate-limit: Limits repeated requests from the same client, which helps
+     protect login and API routes from brute force or spam.
+   - helmet: Sets common HTTP security headers for the Express app.
+   - jsonwebtoken: Creates and verifies JWTs for stateless authentication and
+     protected API routes.
+
+6. Added backend run scripts
+
+   package.json scripts:
+   "start": "node server.js"
+   "dev": "nodemon server.js"
+
+   Why:
+   start runs the backend normally, while dev runs it through nodemon so the server
+   restarts automatically during development.
+
 
 Frontend setup
 
@@ -84,3 +110,19 @@ Frontend setup
      configuration.
    - @types/react: Provides TypeScript type definitions for React APIs.
    - @types/react-dom: Provides TypeScript type definitions for React DOM APIs.
+
+3. Installed Tailwind CSS for the frontend
+
+   Command:
+   npm install tailwindcss @tailwindcss/vite
+
+   Why these dependencies are used:
+   - tailwindcss: Provides utility-first CSS classes for styling the React
+     frontend.
+   - @tailwindcss/vite: Connects Tailwind CSS to the Vite build pipeline so
+     Tailwind styles are processed during development and production builds.
+
+   Related configuration:
+   - vite.config.js imports @tailwindcss/vite and adds tailwindcss() to the Vite
+     plugins array.
+   - src/index.css imports Tailwind with @import "tailwindcss";
