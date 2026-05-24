@@ -9,6 +9,8 @@ import authRoutes from "./routes/auth.routes.js";
 import { protect } from "./middleware/auth.middleware.js";
 import projectRoutes from "./routes/project.routes.js";
 import schemaRoutes from "./routes/schema.routes.js";
+import endpointRoutes from "./routes/endpoint.routes.js";
+
 
 dotenv.config();
 
@@ -38,6 +40,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", protect, projectRoutes);
 app.use("/api/schemas", protect, schemaRoutes);
+app.use("/api/endpoints", protect, endpointRoutes)
 
 const PORT = process.env.PORT || 5000;
 
