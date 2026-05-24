@@ -39,7 +39,7 @@ export const registerAdmin = async(req, res) => {
 
 // @desc    Login the user
 // @route   POST /api/auth/login
-const loginAdmin = async(req, res) => {
+export const loginAdmin = async(req, res) => {
   try{
     const {username, password} = req.body;
     const user = await User.findOne({username});
