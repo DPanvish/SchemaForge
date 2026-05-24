@@ -126,3 +126,23 @@ Frontend setup
    - vite.config.js imports @tailwindcss/vite and adds tailwindcss() to the Vite
      plugins array.
    - src/index.css imports Tailwind with @import "tailwindcss";
+
+4. Installed frontend application libraries
+
+   Command:
+   npm install @tanstack/react-query @tanstack/react-query-devtools axios lucide-react react-router-dom reactflow zustand
+
+   Why these dependencies are used:
+   - @tanstack/react-query: Manages server data fetching, caching, background
+     refreshes, and loading/error states in React.
+   - @tanstack/react-query-devtools: Adds development tools for inspecting React
+     Query cache state and active queries while building the app.
+   - axios: Provides a promise-based HTTP client for calling backend API endpoints.
+   - lucide-react: Provides ready-to-use React icons for buttons, navigation, and
+     interface controls.
+   - react-router-dom: Adds client-side routing so the frontend can move between
+     pages/views without full page reloads.
+   - reactflow: Provides interactive node-and-edge canvas components for building
+     visual schema or workflow editors.
+   - zustand: Provides lightweight global state management for frontend UI and app
+     state that should be shared across components.
