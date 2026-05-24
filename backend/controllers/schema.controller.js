@@ -26,6 +26,9 @@ export const getNodesByProject = async(req, res) => {
     const nodes = await SchemaNode.find({project:projectId});
     res.status(200).json(nodes);
   }catch(error){
+    if (error?.name === "CastError") {
+      return res.status(400).json({ error: "Invalid projectId" });
+    }
     res.status(500).json({error: "Server Error"});
   }
 };
@@ -43,6 +46,9 @@ export const createNode = async(req, res) => {
     });
     res.status(201).json(newNode);
   }catch(error){
+    if (error?.name === "CastError") {
+      return res.status(400).json({ error: "Invalid projectId" });
+    }
     res.status(500).json({error: "Server Error"});
   }
 };
@@ -56,6 +62,9 @@ export const updateNode = async(req, res) => {
       req.body,
       {new: true}
     );
+    if (!updateNode) {
+      return res.status(404).json({ error: "Schema node not found" });
+    }
     res.status(200).json(updateNode);
   }catch(error){
     res.status(500).json({error: "Server Error"});
