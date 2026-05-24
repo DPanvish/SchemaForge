@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import projectRoutes from "./routes/project.routes.js";
+import schemaRoutes from "./routes/schema.routes.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/api/projects", projectRoutes);
+app.use("/api/schemas", schemaRoutes);
 
 const PORT = process.env.PORT || 5000;
 
