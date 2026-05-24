@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
 @theme {
+  --color-background: #0A0A0A;
+  --color-panel: #141414;
+  --color-border: #262626;
+  --color-accent-cyan: #00E5FF;
+  --color-accent-amber: #FFAB00;
   
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', sans-serif;
+  
+  --shadow-glow: 0 0 15px rgba(0, 229, 255, 0.2);
+}
+
+body {
+  background-color: var(--color-background);
+  color: #E5E5E5;
+  font-family: var(--font-sans);
 }
