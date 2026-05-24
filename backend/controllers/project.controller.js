@@ -1,6 +1,7 @@
 import Project from "../models/Project.js";
 import { z } from "zod";
 
+// Validation Schema for creating a project
 export const createProjectSchema = z.object({
   body: z.object({
     name: z.string().min(1, "Project name is required").max(50),
