@@ -19,6 +19,9 @@ const useCanvasStore = create((set, get) => ({
   },
   onConnect: (connection) => {
     set({ edges: addEdge({ ...connection, animated: true, style: { stroke: '#00E5FF' } }, get().edges) });
+  },
+  deleteEdge: (edgeId) => {
+    set({ edges: get().edges.filter((edge) => edge.id !== edgeId) });
   }
 }));
 

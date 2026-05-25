@@ -8,20 +8,20 @@ import TableNode from './TableNode';
 import ExportModal from './ExportModal';
 import AddTableModal from './AddTableModal';
 import EditTableModal from './EditTableModal';
+import RelationEdge from './RelationEdge';
 import api from '../../lib/api';
 
 const nodeTypes = { tableNode: TableNode };
+const edgeTypes = { relation: RelationEdge };
 
 const SchemaCanvas = ({projectId}) => {
-  const { nodes, setNodes, edges, setEdges, onNodesChange, onEdgesChange, onConnect} = useCanvasStore();
+  const { nodes, setNodes, edges, onNodesChange, onEdgesChange, onConnect} = useCanvasStore();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isAddTableOpen, setIsAddTableOpen] = useState(false);
   const [isEditTableOpen, setIsEditTableOpen] = useState(false);
   const [editingNodeData, setEditingNodeData] = useState(null);
 
-  console.log("Canvas Project ID:", projectId);
-
-  const { data: dbNodes, isLoading, error } = useQuery({
+  const { data: dbNodes, isLoading } = useQuery({
     queryKey: ['schemas', projectId],
     queryFn: async () => {
       console.log("Axios Request Fired for Project:", projectId);
@@ -46,11 +46,7 @@ const SchemaCanvas = ({projectId}) => {
   }, []);
 
   useEffect(() => {
-    console.log("STEP 1: useEffect triggered. dbNodes =", dbNodes);
-
     if (dbNodes && Array.isArray(dbNodes)) {
-      console.log("STEP 2: dbNodes is a valid array of length:", dbNodes.length);
-      
       try {
         const formattedNodes = dbNodes.map((node) => {
           // CRASH PREVENTION: Default to empty arrays/objects if data is missing
@@ -77,14 +73,7 @@ const SchemaCanvas = ({projectId}) => {
             }
           };
         });
-
-        console.log("STEP 3: Formatting successful. Formatted Nodes =", formattedNodes);
-        
-
         setNodes(formattedNodes);
-        
-        console.log("STEP 4: setNodes has been dispatched!");
-        
       } catch (err) {
 
         console.error("CRITICAL ERROR DURING FORMATTING:", err);
@@ -93,15 +82,32 @@ const SchemaCanvas = ({projectId}) => {
   }, [dbNodes, setNodes]);
 
   const updatePositionMutation = useMutation({
-    mutationFn: async({id, position}) => {
-      const res = await api.put(`/schemas/${id}`, {uiPosition: position});
+    mutationFn: async ({ id, position, nodeData }) => {
+      const cleanPosition = {
+        x: Math.round(position.x),
+        y: Math.round(position.y)
+      };
+
+      console.log(`📡 Sending PUT request for Node: ${id}`, cleanPosition);
+      
+      const res = await api.put(`/schemas/${id}`, {
+        projectId, 
+        tableName: nodeData.tableName,
+        fields: nodeData.fields,
+        uiPosition: cleanPosition 
+      });
       return res.data;
     },
-    onError: (error) => console.error("Failed to save layout", error)
+    onSuccess: () => console.log("✅ Coordinates permanently saved to MongoDB!"),
+    onError: (error) => console.error("❌ Backend rejected the save:", error.response?.data || error.message),
   });
 
   const onNodeDragStop = useCallback((event, node) => {
-    updatePositionMutation.mutate({ id: node.id, position: node.position });
+    updatePositionMutation.mutate({ 
+      id: node.id, 
+      position: node.position,
+      nodeData: node.data 
+    });
   }, [updatePositionMutation]);
 
   if(isLoading){
@@ -143,6 +149,11 @@ const SchemaCanvas = ({projectId}) => {
         onConnect={onConnect}
         onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={{
+          type: "relation",
+          animated: true,
+        }}
         fitView
         className="dark"
       >
