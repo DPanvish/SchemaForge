@@ -1,48 +1,67 @@
-import { BaseEdge, EdgeLabelRenderer, getBezierPath } from 'reactflow';
+import { useState } from 'react';
+import { EdgeLabelRenderer, getBezierPath } from 'reactflow';
 import { X } from 'lucide-react';
 import useCanvasStore from '../../store/useCanvasStore';
 
 export default function RelationEdge({ 
-  id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd 
+  id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd 
 }) {
-  // Calculate the path and the exact center point for our button
+  const [isHovered, setIsHovered] = useState(false);
+  const deleteEdge = useCanvasStore((state) => state.deleteEdge);
+
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
   });
 
-  const deleteEdge = useCanvasStore((state) => state.deleteEdge);
-
   return (
-    <>
-      {/* The glowing cyber-line */}
-      <BaseEdge 
-        path={edgePath} 
-        markerEnd={markerEnd} 
-        style={{ ...style, strokeWidth: 2, stroke: 'var(--color-accent-cyan)' }} 
+    <g 
+      onMouseEnter={() => setIsHovered(true)} 
+      onMouseLeave={() => setIsHovered(false)}
+      className="cursor-pointer"
+    >
+      {/* Invisible thick path to make mouse hovering easy */}
+      <path
+        d={edgePath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={20}
+      />
+
+      {/* The visible animated connection line */}
+      <path
+        d={edgePath}
+        fill="none"
+        // Uses the CSS variable, falls back to Cyan, rests at grey
+        stroke={isHovered ? 'var(--project-accent, #00E5FF)' : '#525252'}
+        strokeWidth={isHovered ? 3 : 2}
+        className="transition-all duration-300"
+        markerEnd={markerEnd}
       />
       
-      {/* The Interactive HTML Layer */}
-      <EdgeLabelRenderer>
-        <div
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            pointerEvents: 'all', // Crucial: allows clicking the button instead of the canvas
-          }}
-          className="nodrag nopan"
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent clicking through to the canvas
-              deleteEdge(id);
+      {/* The Interactive Delete Button Overlay */}
+      {isHovered && (
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              pointerEvents: 'all',
             }}
-            className="w-5 h-5 bg-panel border border-border rounded-full flex items-center justify-center text-text-muted hover:text-[#FF5252] hover:border-[#FF5252] hover:bg-[#FF5252]/10 transition-all shadow-lg group cursor-pointer"
-            title="Remove Relation"
+            className="nodrag nopan animate-in zoom-in duration-200"
           >
-            <X size={12} className="group-hover:scale-110 transition-transform" />
-          </button>
-        </div>
-      </EdgeLabelRenderer>
-    </>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteEdge(id);
+              }}
+              className="w-6 h-6 bg-panel border border-[#FF5252] rounded-full flex items-center justify-center text-[#FF5252] hover:bg-[#FF5252] hover:text-white transition-all shadow-[0_0_15px_rgba(255,82,82,0.4)]"
+              title="Remove Relation"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </EdgeLabelRenderer>
+      )}
+    </g>
   );
 }

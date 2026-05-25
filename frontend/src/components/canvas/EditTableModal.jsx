@@ -10,6 +10,17 @@ export default function EditTableModal({ isOpen, onClose, projectId, nodeData })
   const [error, setError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [nodeColor, setNodeColor] = useState('#00E5FF');
+  const colorPresets = ['#00E5FF', '#FFAB00', '#A8FFB2', '#FF5252', '#E040FB', '#90CAF9'];
+
+  useEffect(() => {
+    if (nodeData) {
+      setTableName(nodeData.data.tableName);
+      setFields(JSON.parse(JSON.stringify(nodeData.data.fields)));
+      setNodeColor(nodeData.data.color || '#00E5FF'); // Add this line
+    }
+  }, [nodeData]);
+
   // Pre-fill the form when the modal opens with a specific node
   useEffect(() => {
     if (nodeData) {
@@ -62,7 +73,7 @@ export default function EditTableModal({ isOpen, onClose, projectId, nodeData })
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!tableName) return setError('Table name is required');
-    updateTableMutation.mutate({ tableName, fields });
+    updateTableMutation.mutate({ tableName, fields, color: nodeColor });
   };
 
   if (!isOpen || !nodeData) return null;
@@ -94,6 +105,30 @@ export default function EditTableModal({ isOpen, onClose, projectId, nodeData })
               onChange={(e) => setTableName(e.target.value)}
               className="w-full bg-panel border border-border text-text-main text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-accent-cyan transition"
             />
+          </div>
+
+          <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-200">
+            <label className="block text-xs font-mono text-text-muted mb-2">NODE ACCENT COLOR</label>
+            <div className="flex gap-2 items-center bg-background/50 p-3 rounded border border-border">
+              {colorPresets.map(c => (
+                <button 
+                  key={c} 
+                  type="button" 
+                  onClick={() => setNodeColor(c)}
+                  style={{ backgroundColor: c }}
+                  className={`w-6 h-6 rounded-full transition-transform duration-200 ${
+                    nodeColor === c ? 'scale-125 ring-2 ring-text-main shadow-lg' : 'opacity-60 hover:opacity-100'
+                  }`}
+                />
+              ))}
+              <div className="w-px h-6 bg-border mx-2" />
+              <input 
+                type="color" 
+                value={nodeColor} 
+                onChange={(e) => setNodeColor(e.target.value)} 
+                className="bg-transparent border-none w-8 h-8 cursor-pointer" 
+              />
+            </div>
           </div>
 
           <div className="mb-4 flex items-center justify-between">

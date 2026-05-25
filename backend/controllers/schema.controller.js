@@ -15,6 +15,24 @@ export const nodeSchemaValidation = z.object({
       x: z.number(),
       y: z.number(),
     }).optional(),
+    color: z.string().optional(),
+  })
+});
+
+export const nodeUpdateSchemaValidation = z.object({
+  body: z.object({
+    tableName: z.string().min(1, "Table name is required").optional(),
+    fields: z.array(z.object({
+      name: z.string(),
+      dataType: z.string(),
+      isRequired: z.boolean().optional(),
+      isUnique: z.boolean().optional(),
+    })).optional(),
+    uiPosition: z.object({
+      x: z.number(),
+      y: z.number(),
+    }).optional(),
+    color: z.string().optional(),
   })
 });
 
@@ -37,12 +55,13 @@ export const getNodesByProject = async(req, res) => {
 // @route   POST /api/schemas
 export const createNode = async(req, res) => {
   try{
-    const {projectId, tableName, fields, uiPosition} = req.body;
+    const {projectId, tableName, fields, uiPosition, color} = req.body;
     const newNode = await SchemaNode.create({
       project: projectId,
       tableName,
       fields: fields || [],
       uiPosition: uiPosition || {x: 0, y: 0},
+      color,
     });
     res.status(201).json(newNode);
   }catch(error){
@@ -57,9 +76,18 @@ export const createNode = async(req, res) => {
 // @route   PUT /api/schemas/:id
 export const updateNode = async(req, res) => {
   try{
+    const { tableName, fields, uiPosition, color } = req.body;
+
     const updateNode = await SchemaNode.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { 
+        $set: { 
+          tableName, 
+          fields, 
+          uiPosition, 
+          color,
+        } 
+      },
       {new: true}
     );
     if (!updateNode) {

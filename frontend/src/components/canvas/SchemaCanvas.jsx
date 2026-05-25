@@ -3,7 +3,6 @@ import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
 import 'reactflow/dist/style.css'; 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Database, Code2 } from 'lucide-react';
-
 import useCanvasStore from '../../store/useCanvasStore';
 import TableNode from './TableNode';
 import RelationEdge from './RelationEdge';
@@ -72,7 +71,8 @@ export default function SchemaCanvas({ projectId }) {
           position: { x: Number(safePos.x), y: Number(safePos.y) },
           data: {
             tableName: node.tableName || 'Unnamed Table',
-            fields: cleanFields 
+            fields: cleanFields,
+            color: node.color || '#00E5FF',
           }
         };
       });
