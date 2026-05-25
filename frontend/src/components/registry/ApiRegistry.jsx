@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react"
 import { Terminal, ShieldAlert, Plus, Layers } from 'lucide-react';
+import AddEndpointModal from './AddEndpointModal';
 import api from "../../lib/api";
 
 
 const ApiRegistry = ({projectId}) => {
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
     setSelectedEndpoint(null);
@@ -56,7 +58,9 @@ const ApiRegistry = ({projectId}) => {
             <Terminal size={18} className="text-accent-cyan" />
             <h2 className="font-mono text-sm font-bold tracking-wider uppercase text-text-main">API Route Explorer</h2>
           </div>
-          <button className="flex items-center gap-1 text-xs font-mono bg-panel-hover border border-border px-2 py-1 rounded text-accent-cyan hover:bg-border transition">
+          <button
+            onClick={() => setIsAddModalOpen(true)} 
+            className="flex items-center gap-1 text-xs font-mono bg-panel-hover border border-border px-2 py-1 rounded text-accent-cyan hover:bg-border transition">
             <Plus size={14} /> New
           </button>
         </div>
@@ -132,7 +136,8 @@ const ApiRegistry = ({projectId}) => {
           </div>
         )}
       </div>
-
+      
+      <AddEndpointModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} projectId={projectId} />
     </div>
   )
 }

@@ -15,7 +15,7 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['schemas', projectId]);
+      queryClient.invalidateQueries({ queryKey: ['schemas', projectId] });
       setTableName('');
       setFields([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true }]);
       onClose();
@@ -46,7 +46,8 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
       projectId,
       tableName,
       fields,
-      uiPosition: { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 100 }
+      // uiPosition: { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 100 }
+      uiPosition: { x: 50, y: 50 }
     });
   };
 

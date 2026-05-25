@@ -30,13 +30,14 @@ export default function ProjectWorkspace() {
           >
             API Contract Registry
           </button>
-          <button 
+        </div>
+
+        <button 
             onClick={logout}
             className="flex items-center gap-2 px-3 py-1 text-xs font-mono text-text-muted hover:text-[#FF5252] transition ml-4"
           >
             <LogOut size={14} /> EXIT
           </button>
-        </div>
       </header>
 
       {/* Main Content Area */}

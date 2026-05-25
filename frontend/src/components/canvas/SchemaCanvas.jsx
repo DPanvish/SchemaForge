@@ -1,4 +1,4 @@
-import {  useState, useEffect, useCallback, useMemo } from 'react';
+import {  useState, useEffect, useCallback } from 'react';
 import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
 import { Code2, Database } from 'lucide-react';
 import 'reactflow/dist/style.css'; 
@@ -9,37 +9,70 @@ import ExportModal from './ExportModal';
 import AddTableModal from './AddTableModal';
 import api from '../../lib/api';
 
+const nodeTypes = { tableNode: TableNode };
 
 const SchemaCanvas = ({projectId}) => {
   const { nodes, setNodes, edges, setEdges, onNodesChange, onEdgesChange, onConnect} = useCanvasStore();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isAddTableOpen, setIsAddTableOpen] = useState(false);
 
-  const nodeTypes = useMemo(() => ({
-    tableNode: TableNode
-  }), []);
+  console.log("Canvas Project ID:", projectId);
 
-  const {date: dbNodes, isLoading} = useQuery({
-    queryKey: ["schemas", projectId],
-    queryFn: async() => {
+  const { data: dbNodes, isLoading, error } = useQuery({
+    queryKey: ['schemas', projectId],
+    queryFn: async () => {
+      console.log("Axios Request Fired for Project:", projectId);
       const res = await api.get(`/schemas/${projectId}`);
+      console.log("Axios Response Received:", res.data);
       return res.data;
     },
-    enabled: !!projectId
+    enabled: !!projectId 
   });
 
   useEffect(() => {
-    if(dbNodes){
-      const formattedNodes = dbNodes.map(node => ({
-        id: node._id,
-        type: "tableNode",
-        position: node.uiPosition || {x: 0, y: 0},
-        data: {
-          tableName: node.tableName,
-          fields: node.fields
-        }
-      }));
-      setNodes(formattedNodes);
+    console.log("STEP 1: useEffect triggered. dbNodes =", dbNodes);
+
+    if (dbNodes && Array.isArray(dbNodes)) {
+      console.log("STEP 2: dbNodes is a valid array of length:", dbNodes.length);
+      
+      try {
+        const formattedNodes = dbNodes.map((node) => {
+          // CRASH PREVENTION: Default to empty arrays/objects if data is missing
+          const safeFields = node.fields || [];
+          const safePos = node.uiPosition || { x: 50, y: 50 };
+
+          const cleanFields = safeFields.map(field => ({
+            name: field.name || 'unnamed',
+            dataType: field.dataType || 'String',
+            isRequired: !!field.isRequired,
+            isUnique: !!field.isUnique
+          }));
+
+          return {
+            id: String(node._id), 
+            type: 'tableNode',
+            position: {
+              x: Number(safePos.x),
+              y: Number(safePos.y)
+            },
+            data: {
+              tableName: node.tableName || 'Unnamed Table',
+              fields: cleanFields 
+            }
+          };
+        });
+
+        console.log("STEP 3: Formatting successful. Formatted Nodes =", formattedNodes);
+        
+        // Push to Zustand
+        setNodes(formattedNodes);
+        
+        console.log("STEP 4: setNodes has been dispatched!");
+        
+      } catch (err) {
+        // If the mapping fails silently, this will catch it and force it to display!
+        console.error("CRITICAL ERROR DURING FORMATTING:", err);
+      }
     }
   }, [dbNodes, setNodes]);
 
@@ -64,7 +97,10 @@ const SchemaCanvas = ({projectId}) => {
   }
   
   return (
-    <div className="w-full h-[calc(100vh-64px)] bg-background">
+    <div className="w-full h-[calc(100vh-64px)] bg-background relative">
+      <div className="absolute top-4 left-4 z-10 text-xs font-mono text-[#4CAF50] bg-panel p-2 rounded border border-border">
+        Nodes in State: {nodes.length}
+      </div> 
       <div className="absolute top-4 right-4 z-10 flex gap-3">
         <button 
           onClick={() => setIsAddTableOpen(true)}
