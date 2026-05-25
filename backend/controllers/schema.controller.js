@@ -70,3 +70,14 @@ export const updateNode = async(req, res) => {
     res.status(500).json({error: "Server Error"});
   }
 };
+
+// @desc    Delete a node
+// @route   DELETE /api/schemas/:id
+export const deleteNode = async (req, res) => {
+  try {
+    await SchemaNode.findByIdAndDelete(req.params.id);
+    res.json({ message: "Node deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Server Error" });
+  }
+};

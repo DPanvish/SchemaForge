@@ -7,6 +7,7 @@ import useCanvasStore from '../../store/useCanvasStore';
 import TableNode from './TableNode';
 import ExportModal from './ExportModal';
 import AddTableModal from './AddTableModal';
+import EditTableModal from './EditTableModal';
 import api from '../../lib/api';
 
 const nodeTypes = { tableNode: TableNode };
@@ -15,6 +16,8 @@ const SchemaCanvas = ({projectId}) => {
   const { nodes, setNodes, edges, setEdges, onNodesChange, onEdgesChange, onConnect} = useCanvasStore();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isAddTableOpen, setIsAddTableOpen] = useState(false);
+  const [isEditTableOpen, setIsEditTableOpen] = useState(false);
+  const [editingNodeData, setEditingNodeData] = useState(null);
 
   console.log("Canvas Project ID:", projectId);
 
@@ -28,6 +31,19 @@ const SchemaCanvas = ({projectId}) => {
     },
     enabled: !!projectId 
   });
+
+  useEffect(() => {
+    const handleEditEvent = (event) => {
+      setEditingNodeData(event.detail); // detail contains { id, data }
+      setIsEditTableOpen(true);
+    };
+
+    window.addEventListener('editNode', handleEditEvent);
+    
+    return () => {
+      window.removeEventListener('editNode', handleEditEvent);
+    };
+  }, []);
 
   useEffect(() => {
     console.log("STEP 1: useEffect triggered. dbNodes =", dbNodes);
@@ -64,13 +80,13 @@ const SchemaCanvas = ({projectId}) => {
 
         console.log("STEP 3: Formatting successful. Formatted Nodes =", formattedNodes);
         
-        // Push to Zustand
+
         setNodes(formattedNodes);
         
         console.log("STEP 4: setNodes has been dispatched!");
         
       } catch (err) {
-        // If the mapping fails silently, this will catch it and force it to display!
+
         console.error("CRITICAL ERROR DURING FORMATTING:", err);
       }
     }
@@ -145,7 +161,18 @@ const SchemaCanvas = ({projectId}) => {
         nodes={nodes} 
       />
 
-      <AddTableModal isOpen={isAddTableOpen} onClose={() => setIsAddTableOpen(false)} projectId={projectId} />
+      <AddTableModal 
+        isOpen={isAddTableOpen} 
+        onClose={() => setIsAddTableOpen(false)} 
+        projectId={projectId} 
+      />
+
+      <EditTableModal 
+        isOpen={isEditTableOpen} 
+        onClose={() => { setIsEditTableOpen(false); setEditingNodeData(null); }} 
+        projectId={projectId} 
+        nodeData={editingNodeData} 
+      />
     </div>
   );
 }

@@ -1,26 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Plus, Trash2, Database, Loader2 } from 'lucide-react';
+import { X, Plus, Trash2, Settings2, Loader2, AlertTriangle } from 'lucide-react';
 import api from '../../lib/api';
 
-export default function AddTableModal({ isOpen, onClose, projectId }) {
+export default function EditTableModal({ isOpen, onClose, projectId, nodeData }) {
   const queryClient = useQueryClient();
   const [tableName, setTableName] = useState('');
-  const [fields, setFields] = useState([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true }]);
+  const [fields, setFields] = useState([]);
   const [error, setError] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const addTableMutation = useMutation({
-    mutationFn: async (newTable) => {
-      const res = await api.post('/schemas', newTable);
+  // Pre-fill the form when the modal opens with a specific node
+  useEffect(() => {
+    if (nodeData) {
+      setTableName(nodeData.data.tableName);
+      // Deep copy the fields to avoid mutating the original prop
+      setFields(JSON.parse(JSON.stringify(nodeData.data.fields)));
+      setIsDeleting(false);
+      setError('');
+    }
+  }, [nodeData]);
+
+  const updateTableMutation = useMutation({
+    mutationFn: async (updatedData) => {
+      const res = await api.put(`/schemas/${nodeData.id}`, updatedData);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['schemas', projectId] });
-      setTableName('');
-      setFields([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true }]);
       onClose();
     },
-    onError: (err) => setError(err.response?.data?.error || 'Failed to create table')
+    onError: (err) => setError(err.response?.data?.error || 'Failed to update table')
+  });
+
+  const deleteTableMutation = useMutation({
+    mutationFn: async () => {
+      const res = await api.delete(`/schemas/${nodeData.id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['schemas', projectId] });
+      onClose();
+    },
+    onError: (err) => setError(err.response?.data?.error || 'Failed to delete table')
   });
 
   const handleAddField = () => {
@@ -40,50 +62,42 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!tableName) return setError('Table name is required');
-    
-    // Default the new table to spawn in the center of the canvas
-    addTableMutation.mutate({
-      projectId,
-      tableName,
-      fields,
-      uiPosition: { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 100 }
-      // uiPosition: { x: 50, y: 50 }
-    });
+    updateTableMutation.mutate({ tableName, fields });
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !nodeData) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-background border border-border rounded-xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
         
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-panel-header">
           <div className="flex items-center gap-2 text-text-main font-mono font-bold">
-            <Database className="text-accent-cyan" size={20} />
-            <span>DEFINE NEW SCHEMA</span>
+            <Settings2 className="text-accent-cyan" size={20} />
+            <span>CONFIGURE NODE: {nodeData.data.tableName}</span>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-[#FF5252] transition">
+          <button onClick={onClose} className="text-text-muted hover:text-accent-amber transition">
             <X size={20} />
           </button>
         </div>
 
+        {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[70vh]">
           {error && <div className="mb-4 p-2 bg-[#FF5252]/10 border border-[#FF5252]/20 text-[#FF5252] text-xs font-mono rounded">{error}</div>}
           
           <div className="mb-6">
-            <label className="block text-xs font-mono text-text-muted mb-2">TABLE / COLLECTION NAME</label>
+            <label className="block text-xs font-mono text-text-muted mb-2">COLLECTION NAME</label>
             <input 
               type="text" 
-              placeholder="e.g., Users, Orders, Products"
               value={tableName}
               onChange={(e) => setTableName(e.target.value)}
               className="w-full bg-panel border border-border text-text-main text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-accent-cyan transition"
-              autoFocus
             />
           </div>
 
           <div className="mb-4 flex items-center justify-between">
-            <label className="block text-xs font-mono text-text-muted">DATA FIELDS</label>
+            <label className="block text-xs font-mono text-text-muted">DATA SCHEMA</label>
             <button onClick={handleAddField} className="flex items-center gap-1 text-xs font-mono text-accent-cyan hover:text-accent-amber transition">
               <Plus size={14} /> Add Column
             </button>
@@ -94,7 +108,6 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
               <div key={index} className="flex items-center gap-3 bg-panel p-3 rounded border border-border">
                 <input 
                   type="text" 
-                  placeholder="Field Name"
                   value={field.name}
                   onChange={(e) => updateField(index, 'name', e.target.value)}
                   className="flex-1 bg-background border border-border text-text-main text-sm font-mono rounded px-3 py-1.5 focus:outline-none focus:border-accent-cyan"
@@ -126,13 +139,35 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
           </div>
         </div>
 
-        <div className="p-4 border-t border-border bg-panel-header flex justify-end">
+        {/* Footer actions */}
+        <div className="p-4 border-t border-border bg-panel-header flex items-center justify-between">
+          {/* Delete Sequence */}
+          {isDeleting ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-[#FF5252] flex items-center gap-1"><AlertTriangle size={14}/> Confirm Delete?</span>
+              <button onClick={() => setIsDeleting(false)} className="px-3 py-1.5 rounded bg-panel border border-border text-xs font-mono text-text-main hover:bg-panel-hover">Cancel</button>
+              <button onClick={() => deleteTableMutation.mutate()} className="px-3 py-1.5 rounded bg-[#FF5252]/10 border border-[#FF5252] text-xs font-mono text-[#FF5252] hover:bg-[#FF5252] hover:text-background flex items-center gap-2">
+                {deleteTableMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : 'Confirm'}
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsDeleting(true)}
+              className="flex items-center gap-2 text-text-muted hover:text-[#FF5252] font-mono text-xs px-2 py-1 rounded transition"
+            >
+              <Trash2 size={14} /> PURGE NODE
+            </button>
+          )}
+
+          {/* Save Sequence */}
           <button 
             onClick={handleSubmit}
-            disabled={addTableMutation.isPending}
-            className="flex items-center gap-2 bg-accent-cyan/10 border border-accent-cyan text-accent-cyan px-6 py-2 rounded font-mono text-sm font-bold hover:bg-accent-cyan hover:text-background transition shadow-glow"
+            disabled={updateTableMutation.isPending || isDeleting}
+            className={`flex items-center gap-2 px-6 py-2 rounded font-mono text-sm font-bold transition shadow-glow ${
+              isDeleting ? 'opacity-50 cursor-not-allowed bg-panel border-border text-text-muted' : 'bg-accent-cyan/10 border border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-background'
+            }`}
           >
-            {addTableMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'INITIALIZE NODE'}
+            {updateTableMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'APPLY CONFIGURATION'}
           </button>
         </div>
 
