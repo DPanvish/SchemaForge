@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import SchemaCanvas from '../components/canvas/SchemaCanvas';
 import ApiRegistry from '../components/registry/ApiRegistry';
+import useAuthStore from '../store/useAuthStore';
+import { LogOut } from 'lucide-react';
 
 export default function ProjectWorkspace() {
   const { id } = useParams(); 
+  const logout = useAuthStore((state) => state.logout);
   const [activeTab, setActiveTab] = useState('canvas'); // 'canvas' | 'api'
 
   return (
@@ -26,6 +29,12 @@ export default function ProjectWorkspace() {
             className={`px-3 py-1 text-xs font-mono rounded transition ${activeTab === 'api' ? 'bg-panel border border-accent-cyan/50 text-accent-cyan shadow-glow' : 'text-text-muted hover:text-text-main'}`}
           >
             API Contract Registry
+          </button>
+          <button 
+            onClick={logout}
+            className="flex items-center gap-2 px-3 py-1 text-xs font-mono text-text-muted hover:text-[#FF5252] transition ml-4"
+          >
+            <LogOut size={14} /> EXIT
           </button>
         </div>
       </header>
