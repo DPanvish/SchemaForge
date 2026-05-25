@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Terminal, ShieldAlert, Plus, Layers } from 'lucide-react';
 import api from "../../lib/api";
 
@@ -7,8 +7,12 @@ import api from "../../lib/api";
 const ApiRegistry = ({projectId}) => {
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
 
-  const {data: endpoints, isLoading} = useQuery({
-    queryKay: ["endpoints", projectId],
+  useEffect(() => {
+    setSelectedEndpoint(null);
+  }, [projectId]);
+
+  const {data: endpoints, isLoading, isError, error} = useQuery({
+    queryKey: ["endpoints", projectId],
     queryFn: async() => {
       const res = await api.get(`/endpoints/${projectId}`);
       return res.data;
@@ -33,6 +37,14 @@ const ApiRegistry = ({projectId}) => {
   if(!projectId){
     return <div className="p-8 text-text-muted font-mono">Select a project to manage API routes.</div>;
   }
+  
+  if (isError) {
+    return (
+      <div className="p-8 text-[`#FF5252`] font-mono">
+        Failed to load API routes: {error?.message || "Unknown error"}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-[calc(100vh-64px)] bg-background flex flex-col md:flex-row border-t border-border">
@@ -55,10 +67,11 @@ const ApiRegistry = ({projectId}) => {
           </div>
         ) : (
           endpoints?.map((ep) => (
-            <div 
+            <button
+              type="button" 
               key={ep._id} 
               onClick={() => setSelectedEndpoint(ep)}
-              className={`p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
+              className={`w-full text-left p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
                 selectedEndpoint?._id === ep._id 
                   ? 'bg-panel-hover border-accent-cyan shadow-glow' 
                   : 'bg-panel border-border hover:border-panel-hover'
@@ -71,7 +84,7 @@ const ApiRegistry = ({projectId}) => {
                 <span className="text-text-main font-semibold tracking-tight">{ep.path}</span>
               </div>
               <span className="text-[10px] text-text-muted max-w-[120px] truncate">{ep.description}</span>
-            </div>
+            </button>
           ))
         )}
       </div>
