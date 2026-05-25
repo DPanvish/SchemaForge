@@ -1,17 +1,19 @@
 import {  useState, useEffect, useCallback, useMemo } from 'react';
 import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
-import { Code2 } from 'lucide-react';
+import { Code2, Database } from 'lucide-react';
 import 'reactflow/dist/style.css'; 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import useCanvasStore from '../../store/useCanvasStore';
 import TableNode from './TableNode';
 import ExportModal from './ExportModal';
+import AddTableModal from './AddTableModal';
 import api from '../../lib/api';
 
 
 const SchemaCanvas = ({projectId}) => {
   const { nodes, setNodes, edges, setEdges, onNodesChange, onEdgesChange, onConnect} = useCanvasStore();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isAddTableOpen, setIsAddTableOpen] = useState(false);
 
   const nodeTypes = useMemo(() => ({
     tableNode: TableNode
@@ -63,7 +65,15 @@ const SchemaCanvas = ({projectId}) => {
   
   return (
     <div className="w-full h-[calc(100vh-64px)] bg-background">
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-10 flex gap-3">
+        <button 
+          onClick={() => setIsAddTableOpen(true)}
+          className="flex items-center gap-2 bg-panel border border-border px-4 py-2 rounded-md font-mono text-xs font-bold text-text-main hover:bg-panel-hover hover:border-accent-amber hover:text-accent-amber transition-all"
+        >
+          <Database size={16} />
+          ADD TABLE
+        </button>
+
         <button 
           onClick={() => setIsExportModalOpen(true)}
           className="flex items-center gap-2 bg-panel border border-accent-cyan/50 shadow-glow px-4 py-2 rounded-md font-mono text-xs font-bold text-accent-cyan hover:bg-panel-hover hover:border-accent-cyan transition-all"
@@ -98,6 +108,8 @@ const SchemaCanvas = ({projectId}) => {
         onClose={() => setIsExportModalOpen(false)} 
         nodes={nodes} 
       />
+
+      <AddTableModal isOpen={isAddTableOpen} onClose={() => setIsAddTableOpen(false)} projectId={projectId} />
     </div>
   );
 }
