@@ -1,15 +1,17 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import {  useState, useEffect, useCallback, useMemo } from 'react';
 import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
+import { Code2 } from 'lucide-react';
 import 'reactflow/dist/style.css'; 
 import { useQuery, useMutation } from '@tanstack/react-query';
-
 import useCanvasStore from '../../store/useCanvasStore';
 import TableNode from './TableNode';
+import ExportModal from './ExportModal';
 import api from '../../lib/api';
 
 
 const SchemaCanvas = ({projectId}) => {
   const { nodes, setNodes, edges, setEdges, onNodesChange, onEdgesChange, onConnect} = useCanvasStore();
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const nodeTypes = useMemo(() => ({
     tableNode: TableNode
@@ -61,6 +63,16 @@ const SchemaCanvas = ({projectId}) => {
   
   return (
     <div className="w-full h-[calc(100vh-64px)] bg-background">
+      <div className="absolute top-4 right-4 z-10">
+        <button 
+          onClick={() => setIsExportModalOpen(true)}
+          className="flex items-center gap-2 bg-panel border border-accent-cyan/50 shadow-glow px-4 py-2 rounded-md font-mono text-xs font-bold text-accent-cyan hover:bg-panel-hover hover:border-accent-cyan transition-all"
+        >
+          <Code2 size={16} />
+          GENERATE CODE
+        </button>
+      </div>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -80,6 +92,12 @@ const SchemaCanvas = ({projectId}) => {
           style={{ backgroundColor: '#141414' }} 
         />
       </ReactFlow>
+
+      <ExportModal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)} 
+        nodes={nodes} 
+      />
     </div>
   );
 }
