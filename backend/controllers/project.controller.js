@@ -31,3 +31,37 @@ export const createProject = async(req, res) => {
     res.status(500).json({error: "Server Error"});
   }
 };
+
+// @desc    Update a project's visual edges
+// @route   PUT /api/projects/:id/edges
+export const updateProjectEdges = async (req, res) => {
+  try {
+    const { edges } = req.body;
+    
+    const updatedProject = await Project.findByIdAndUpdate(
+      req.params.id,
+      { $set: { edges: edges } },
+      { new: true }
+    );
+
+    if (!updatedProject) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    res.json(updatedProject);
+  } catch (err) {
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// @desc    get project by id
+// @route   PUT /api/projects/:id
+export const getProjectById = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ error: "Project not found" });
+    res.json(project);
+  } catch (err) {
+    res.status(500).json({ error: "Server Error" });
+  }
+};

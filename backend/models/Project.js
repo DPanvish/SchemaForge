@@ -14,6 +14,10 @@ const projectSchema = new mongoose.Schema({
     type: String, 
     default: '#0A0A0A' 
   }, // For custom UI accents later
+  edges: {
+    type: Array,
+    default: []
+  },
 }, { timestamps: true });
 
 const Project = mongoose.model('Project', projectSchema);
