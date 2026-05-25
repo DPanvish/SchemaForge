@@ -84,12 +84,14 @@ export default function SchemaCanvas({ projectId }) {
 
   // Sync Edges -> React Flow
   useEffect(() => {
-    if (projectData && projectData.edges) {
+    if(projectData && Array.isArray(projectData.edges)){
       const formattedEdges = projectData.edges.map(edge => ({
         ...edge,
         type: 'relation' // Force custom interactive edge
       }));
       setEdges(formattedEdges);
+    }else if(projectData){
++      setEdges([]);
     }
   }, [projectData, setEdges]);
 

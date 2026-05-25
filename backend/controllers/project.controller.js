@@ -37,11 +37,15 @@ export const createProject = async(req, res) => {
 export const updateProjectEdges = async (req, res) => {
   try {
     const { edges } = req.body;
+
+    if (!Array.isArray(edges)) {
+      return res.status(400).json({ error: "edges must be an array" });
+    }
     
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.id,
       { $set: { edges: edges } },
-      { new: true }
+      { new: true, runValidators: true}
     );
 
     if (!updatedProject) {
