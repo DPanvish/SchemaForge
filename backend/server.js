@@ -23,6 +23,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(helmet()); // Set Security HTTP Headers
+
+app.use((req, res, next) => {
+  Object.defineProperty(req, 'query', {
+    value: req.query,
+    writable: true,
+    configurable: true,
+    enumerable: true,
+  });
+  next();
+});
+
 app.use(mongoSanitize()); // Prevent NoSQL Injection (sanitizes data containing $ or .)
 
 const limiter = rateLimit({
