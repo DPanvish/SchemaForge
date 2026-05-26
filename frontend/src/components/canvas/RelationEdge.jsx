@@ -4,12 +4,14 @@ import { X } from 'lucide-react';
 import useCanvasStore from '../../store/useCanvasStore';
 
 export default function RelationEdge({ 
-  id, source, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition
+  id, source, target, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const deleteEdge = useCanvasStore((state) => state.deleteEdge);
   const sourceNode = useCanvasStore((state) => state.nodes.find((node) => node.id === source));
-  const accentColor = sourceNode?.data?.color || 'var(--project-accent, #00E5FF)';
+  const targetNode = useCanvasStore((state) => state.nodes.find((node) => node.id === target));
+  const sourceColor = sourceNode?.data?.color || 'var(--project-accent, #00E5FF)';
+  const targetColor = targetNode?.data?.color || 'var(--project-accent, #00E5FF)';
   const safeEdgeId = id.replace(/[^a-zA-Z0-9_-]/g, '-');
   const gradientId = `relation-gradient-${safeEdgeId}`;
   const glowId = `relation-glow-${safeEdgeId}`;
@@ -26,8 +28,8 @@ export default function RelationEdge({
     >
       <defs>
         <linearGradient id={gradientId} x1={sourceX} y1={sourceY} x2={targetX} y2={targetY} gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor={accentColor} />
-          <stop offset="100%" stopColor="var(--project-accent, #00E5FF)" />
+          <stop offset="0%" stopColor={sourceColor} />
+          <stop offset="100%" stopColor={targetColor} />
         </linearGradient>
         <filter id={glowId} x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation={isHovered ? 4 : 2.5} result="coloredBlur" />

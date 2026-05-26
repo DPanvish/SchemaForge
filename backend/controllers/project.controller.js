@@ -1,4 +1,5 @@
 import Project from "../models/Project.js";
+import SchemaNode from "../models/SchemaNode.js";
 import { z } from "zod";
 
 // Validation Schema for creating a project
@@ -66,6 +67,26 @@ export const getProjectById = async (req, res) => {
     if (!project) return res.status(404).json({ error: "Project not found" });
     res.json(project);
   } catch (err) {
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// @desc    Delete a project and all associated tables/endpoints
+// @route   DELETE /api/projects/:id
+export const deleteProject = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    await SchemaNode.deleteMany({ project: req.params.id });
+    await Project.findByIdAndDelete(req.params.id);
+
+    res.json({ message: "Project and all associated data permanently deleted." });
+  } catch (err) {
+    console.error("Delete Project Error:", err);
     res.status(500).json({ error: "Server Error" });
   }
 };

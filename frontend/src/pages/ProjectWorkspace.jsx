@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SchemaCanvas from '../components/canvas/SchemaCanvas';
 import ApiRegistry from '../components/registry/ApiRegistry';
 import api from '../lib/api';
-import { LogOut, Terminal } from 'lucide-react';
+import { LogOut, Terminal, Trash2 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 
 export default function ProjectWorkspace() {
+  const queryClient = useQueryClient();
   const { id } = useParams(); 
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('canvas');
@@ -21,6 +22,31 @@ export default function ProjectWorkspace() {
     },
     enabled: !!id
   });
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete(`/projects/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['projects']);
+      queryClient.invalidateQueries(['project', id]);
+      navigate('/');
+    },
+    onError: (error) => {
+      console.error("Failed to delete project:", error);
+      alert("Failed to delete the workspace. Check console.");
+    }
+  });
+
+  const handleDeleteWorkspace = () => {
+    const isConfirmed = window.confirm(
+      "CRITICAL WARNING:\n\nAre you sure you want to completely delete this microservice?\nThis will destroy all schemas, relations, and API endpoints forever."
+    );
+
+    if (isConfirmed) {
+      deleteProjectMutation.mutate();
+    }
+  };
 
   let projectAccent = project?.themeColor || '#00E5FF';
   if (projectAccent === '#0A0A0A') {
@@ -63,6 +89,12 @@ export default function ProjectWorkspace() {
               API Contract Registry
             </button>
           </div>
+          <button 
+            onClick={handleDeleteWorkspace} 
+            className="flex items-center gap-1.5 px-3 py-1 text-xs font-mono text-text-muted hover:text-background hover:bg-[#FF5252] border border-transparent hover:border-[#FF5252] rounded transition-all ml-4"
+          >
+            <Trash2 size={14} /> DELETE
+          </button>
 
           <button onClick={logout} className="flex items-center gap-1.5 px-3 py-1 text-xs font-mono text-text-muted hover:text-[#FF5252] transition ml-4">
             <LogOut size={14} /> EXIT
