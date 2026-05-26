@@ -12,12 +12,13 @@ export const createProjectSchema = z.object({
 
 // @desc    Get all workspace projects
 // @route   GET /api/projects
-export const getProjects = async(req, res) => {
-  try{
-    const projects = await Project.find().sort({updatedAt: -1});
-    res.status(200).json(projects);
-  }catch(error){
-    res.status(500).json({error: "Server Error"});
+export const getProjects = async (req, res) => {
+  try {
+    const projects = await Project.find({ owner: req.user._id }).sort({ createdAt: -1 });
+    res.json(projects);
+  } catch (err) {
+    console.error("Get Projects Error:", err);
+    res.status(500).json({ error: "Server Error" });
   }
 };
 
@@ -25,8 +26,8 @@ export const getProjects = async(req, res) => {
 // @route   POST /api/projects
 export const createProject = async(req, res) => {
   try{
-    const {name, description} = req.body;
-    const newProject = await Project.create({name, description});
+    const {name, description, themeColor} = req.body;
+    const newProject = await Project.create({name, description, themeColor, owner: req.user._id, edges: []});
     res.status(201).json(newProject);
   }catch(error){
     res.status(500).json({error: "Server Error"});

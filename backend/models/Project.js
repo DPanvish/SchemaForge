@@ -13,7 +13,12 @@ const projectSchema = new mongoose.Schema({
   themeColor: { 
     type: String, 
     default: '#0A0A0A' 
-  }, // For custom UI accents later
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   edges: {
     type: Array,
     default: []
