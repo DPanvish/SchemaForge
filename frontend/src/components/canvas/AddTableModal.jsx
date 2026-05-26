@@ -6,7 +6,7 @@ import api from '../../lib/api';
 export default function AddTableModal({ isOpen, onClose, projectId }) {
   const queryClient = useQueryClient();
   const [tableName, setTableName] = useState('');
-  const [fields, setFields] = useState([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true, isArray: false }]);
+  const [fields, setFields] = useState([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true, ofType: 'String' }]);
   const [error, setError] = useState('');
   const [nodeColor, setNodeColor] = useState('#00E5FF');
   const colorPresets = ['#00E5FF', '#FFAB00', '#A8FFB2', '#FF5252', '#E040FB', '#90CAF9'];
@@ -26,7 +26,7 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
   });
 
   const handleAddField = () => {
-    setFields([...fields, { name: '', dataType: 'String', isRequired: false, isUnique: false, isArray: false }]);
+    setFields([...fields, { name: '', dataType: 'String', isRequired: false, isUnique: false, ofType: 'String' }]);
   };
 
   const updateField = (index, key, value) => {
@@ -114,21 +114,42 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
                   onChange={(e) => updateField(index, 'name', e.target.value)}
                   className="flex-1 bg-background border border-border text-text-main text-sm font-mono rounded px-3 py-1.5 focus:outline-none focus:border-accent-cyan"
                 />
-                <select 
-                  value={field.dataType}
-                  onChange={(e) => updateField(index, 'dataType', e.target.value)}
-                  className="bg-background border border-border text-accent-cyan text-sm font-mono rounded px-3 py-1.5 focus:outline-none focus:border-accent-cyan"
-                >
-                  <option value="String">String</option>
-                  <option value="Number">Number</option>
-                  <option value="Boolean">Boolean</option>
-                  <option value="Date">Date</option>
-                  <option value="ObjectId">ObjectId</option>
-                </select>
-                <label className="flex items-center gap-1 text-xs font-mono text-text-muted cursor-pointer ml-1" title="Make this an Array">
-                  <input type="checkbox" checked={field.isArray || false} onChange={(e) => updateField(index, 'isArray', e.target.checked)} className="accent-[#E040FB]" />
-                  [ ]
-                </label>
+                {/* Main Data Type Dropdown */}
+                <div className="flex items-center gap-2">
+                  <select 
+                    value={field.dataType}
+                    onChange={(e) => {
+                      updateField(index, 'dataType', e.target.value);
+                      // Auto-set the sub-type to String if they select Array to prevent null errors
+                      if (e.target.value === 'Array') updateField(index, 'ofType', 'String');
+                    }}
+                    className="bg-background border border-border text-accent-cyan text-sm font-mono rounded px-3 py-1.5 focus:outline-none focus:border-accent-cyan"
+                  >
+                    <option value="String">String</option>
+                    <option value="Number">Number</option>
+                    <option value="Boolean">Boolean</option>
+                    <option value="Date">Date</option>
+                    <option value="ObjectId">ObjectId</option>
+                    <option value="Array">Array (List)</option>
+                  </select>
+
+                  {/* Secondary Dropdown (Only appears if Array is selected) */}
+                  {/* {field.dataType === 'Array' && (
+                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200">
+                      <span className="text-text-muted text-xs font-mono">of</span>
+                      <select 
+                        value={field.ofType || 'String'}
+                        onChange={(e) => updateField(index, 'ofType', e.target.value)}
+                        className="bg-background border border-border text-[#E040FB] text-sm font-mono rounded px-3 py-1.5 focus:outline-none focus:border-[#E040FB]"
+                      >
+                        <option value="String">String</option>
+                        <option value="Number">Number</option>
+                        <option value="ObjectId">ObjectId</option>
+                        <option value="Boolean">Boolean</option>
+                      </select>
+                    </div>
+                  )} */}
+                </div>
                 <label className="flex items-center gap-1 text-xs font-mono text-text-muted cursor-pointer">
                   <input type="checkbox" checked={field.isRequired} onChange={(e) => updateField(index, 'isRequired', e.target.checked)} className="accent-accent-cyan" />
                   Req

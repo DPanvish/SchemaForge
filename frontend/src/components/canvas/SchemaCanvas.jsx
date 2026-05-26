@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
+import ReactFlow, { Background, ConnectionMode, Controls, MiniMap } from 'reactflow';
 import 'reactflow/dist/style.css'; 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Database, Code2 } from 'lucide-react';
@@ -188,6 +188,7 @@ export default function SchemaCanvas({ projectId }) {
         onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={{ type: 'relation', animated: true }} 
         fitView
         className="dark"

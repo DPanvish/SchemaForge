@@ -10,19 +10,23 @@ export const generateMongooseModels = (nodes) => {
     code += `const ${schemaName} = new mongoose.Schema({\n`;
 
     fields.forEach((field) => {
-      let mappedType = field.dataType === 'ObjectId' 
-        ? 'mongoose.Schema.Types.ObjectId' 
-        : field.dataType.charAt(0).toUpperCase() + field.dataType.slice(1);
-
       code += `  ${field.name}: { `;
 
-      if (field.isArray) {
-        code += `type: [{ type: ${mappedType}`;
-        if (field.dataType === 'ObjectId') code += `, ref: 'RelatedModel'`; // Placeholder for target relation
-        code += ` }]`;
-      } else {
+      if (field.dataType === 'Array') {
+        const mappedSubType = field.ofType === 'ObjectId' 
+          ? 'mongoose.Schema.Types.ObjectId' 
+          : field.ofType.charAt(0).toUpperCase() + field.ofType.slice(1);
+          
+        code += `type: [{ type: ${mappedSubType}${field.ofType === 'ObjectId' ? ", ref: 'RelatedModel'" : ""} }]`;
+      } 
+
+      else {
+        const mappedType = field.dataType === 'ObjectId' 
+          ? 'mongoose.Schema.Types.ObjectId' 
+          : field.dataType.charAt(0).toUpperCase() + field.dataType.slice(1);
+          
         code += `type: ${mappedType}`;
-        if (field.dataType === 'ObjectId') code += `, ref: 'RelatedModel'`; // Placeholder for target relation
+        if (field.dataType === 'ObjectId') code += `, ref: 'RelatedModel'`; 
       }
 
       if (field.isRequired) code += `, required: true`;

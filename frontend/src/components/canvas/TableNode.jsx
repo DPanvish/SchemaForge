@@ -34,12 +34,22 @@ export default function TableNode({ data, id }) {
       <div className="flex flex-col py-2 font-mono text-xs cursor-default">
         {data.fields?.map((field, index) => (
           <div key={index} className="relative flex justify-between items-center px-4 py-1 hover:bg-panel-hover group transition-colors duration-150">
+            <Handle
+              type="source"
+              position={Position.Left}
+              id={`source-left-${field.name}`}
+              style={field.dataType === 'ObjectId' ? { backgroundColor: 'var(--node-accent)' } : {}}
+              className={`w-2 h-2 border-none opacity-0 group-hover:opacity-100 transition-opacity -ml-5 ${
+                field.dataType === 'ObjectId' ? 'scale-125' : 'bg-text-muted'
+              }`}
+            />
+
             <div className="flex items-center gap-2 text-text-muted">
               {field.isUnique && <Key size={12} className="text-accent-amber" />}
               <span>{field.name}</span>
             </div>
             <span style={{ color: 'var(--node-accent)' }} className="opacity-90">
-              {field.isArray ? `[${field.dataType}]` : field.dataType}
+              {field.dataType === 'Array' ? `[]` : field.dataType}
             </span>
 
             <Handle 
