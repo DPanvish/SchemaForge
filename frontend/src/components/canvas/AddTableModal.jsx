@@ -6,7 +6,7 @@ import api from '../../lib/api';
 export default function AddTableModal({ isOpen, onClose, projectId }) {
   const queryClient = useQueryClient();
   const [tableName, setTableName] = useState('');
-  const [fields, setFields] = useState([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true }]);
+  const [fields, setFields] = useState([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true, isArray: false }]);
   const [error, setError] = useState('');
   const [nodeColor, setNodeColor] = useState('#00E5FF');
   const colorPresets = ['#00E5FF', '#FFAB00', '#A8FFB2', '#FF5252', '#E040FB', '#90CAF9'];
@@ -26,7 +26,7 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
   });
 
   const handleAddField = () => {
-    setFields([...fields, { name: '', dataType: 'String', isRequired: false, isUnique: false }]);
+    setFields([...fields, { name: '', dataType: 'String', isRequired: false, isUnique: false, isArray: false }]);
   };
 
   const updateField = (index, key, value) => {
@@ -125,6 +125,10 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
                   <option value="Date">Date</option>
                   <option value="ObjectId">ObjectId</option>
                 </select>
+                <label className="flex items-center gap-1 text-xs font-mono text-text-muted cursor-pointer ml-1" title="Make this an Array">
+                  <input type="checkbox" checked={field.isArray || false} onChange={(e) => updateField(index, 'isArray', e.target.checked)} className="accent-[#E040FB]" />
+                  [ ]
+                </label>
                 <label className="flex items-center gap-1 text-xs font-mono text-text-muted cursor-pointer">
                   <input type="checkbox" checked={field.isRequired} onChange={(e) => updateField(index, 'isRequired', e.target.checked)} className="accent-accent-cyan" />
                   Req

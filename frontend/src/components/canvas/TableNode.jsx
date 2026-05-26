@@ -38,7 +38,9 @@ export default function TableNode({ data, id }) {
               {field.isUnique && <Key size={12} className="text-accent-amber" />}
               <span>{field.name}</span>
             </div>
-            <span style={{ color: 'var(--node-accent)' }} className="opacity-90">{field.dataType}</span>
+            <span style={{ color: 'var(--node-accent)' }} className="opacity-90">
+              {field.isArray ? `[${field.dataType}]` : field.dataType}
+            </span>
 
             <Handle 
               type="source" 

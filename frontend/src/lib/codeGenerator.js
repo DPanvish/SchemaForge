@@ -1,4 +1,3 @@
-
 export const generateMongooseModels = (nodes) => {
   if (!nodes || nodes.length === 0) return [];
 
@@ -11,15 +10,24 @@ export const generateMongooseModels = (nodes) => {
     code += `const ${schemaName} = new mongoose.Schema({\n`;
 
     fields.forEach((field) => {
-      // Map visual data types to Mongoose valid types
-      let mappedType = field.dataType;
-      if (['string', 'number', 'boolean', 'date'].includes(mappedType.toLowerCase())) {
-        mappedType = mappedType.charAt(0).toUpperCase() + mappedType.slice(1);
+      let mappedType = field.dataType === 'ObjectId' 
+        ? 'mongoose.Schema.Types.ObjectId' 
+        : field.dataType.charAt(0).toUpperCase() + field.dataType.slice(1);
+
+      code += `  ${field.name}: { `;
+
+      if (field.isArray) {
+        code += `type: [{ type: ${mappedType}`;
+        if (field.dataType === 'ObjectId') code += `, ref: 'RelatedModel'`; // Placeholder for target relation
+        code += ` }]`;
+      } else {
+        code += `type: ${mappedType}`;
+        if (field.dataType === 'ObjectId') code += `, ref: 'RelatedModel'`; // Placeholder for target relation
       }
 
-      code += `  ${field.name}: { type: ${mappedType}`;
       if (field.isRequired) code += `, required: true`;
       if (field.isUnique) code += `, unique: true`;
+
       code += ` },\n`;
     });
 

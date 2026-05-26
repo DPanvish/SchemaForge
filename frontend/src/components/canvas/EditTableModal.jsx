@@ -57,7 +57,7 @@ export default function EditTableModal({ isOpen, onClose, projectId, nodeData })
   });
 
   const handleAddField = () => {
-    setFields([...fields, { name: '', dataType: 'String', isRequired: false, isUnique: false }]);
+    setFields([...fields, { name: '', dataType: 'String', isRequired: false, isUnique: false, isArray: false }]);
   };
 
   const updateField = (index, key, value) => {
@@ -158,6 +158,15 @@ export default function EditTableModal({ isOpen, onClose, projectId, nodeData })
                   <option value="Date">Date</option>
                   <option value="ObjectId">ObjectId</option>
                 </select>
+                <label className="flex items-center gap-1 text-xs font-mono text-text-muted cursor-pointer ml-1" title="Make this an Array">
+                  <input 
+                    type="checkbox" 
+                    checked={field.isArray || false} 
+                    onChange={(e) => updateField(index, 'isArray', e.target.checked)} 
+                    className="accent-accent-cyan" 
+                  />
+                  [ ]
+                </label>
                 <label className="flex items-center gap-1 text-xs font-mono text-text-muted cursor-pointer">
                   <input type="checkbox" checked={field.isRequired} onChange={(e) => updateField(index, 'isRequired', e.target.checked)} className="accent-accent-cyan" />
                   Req
