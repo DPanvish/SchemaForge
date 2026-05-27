@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react"
-import { Terminal, ShieldAlert, Plus, Layers } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Terminal, ShieldAlert, Plus, Layers, Network, List } from 'lucide-react';
 import AddEndpointModal from './AddEndpointModal';
+import ApiCanvas from './ApiCanvas'; 
 import api from "../../lib/api";
-
 
 const ApiRegistry = ({projectId}) => {
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState('list'); // <--- The new Toggle State
 
   useEffect(() => {
     setSelectedEndpoint(null);
@@ -61,47 +62,81 @@ const ApiRegistry = ({projectId}) => {
   return (
     <div className="w-full h-[calc(100vh-64px)] bg-background flex flex-col md:flex-row border-t border-border">
       
-      {/* Left Panel: Route Explorer List */}
-      <div className="w-full md:w-2/5 border-r border-border p-4 overflow-y-auto flex flex-col gap-3">
-        <div className="flex items-center justify-between mb-2">
+      {/* Left Panel: Route Explorer List / Graph */}
+      <div className="w-full md:w-[60%] border-r border-border p-4 flex flex-col gap-3 relative">
+        <div className="flex items-center justify-between mb-2 z-10">
           <div className="flex items-center gap-2">
             <Terminal size={18} style={{ color: 'var(--project-accent)' }} />
-            <h2 className="font-mono text-sm font-bold tracking-wider uppercase text-text-main">API Route Explorer</h2>
+            <h2 className="font-mono text-sm font-bold tracking-wider uppercase text-text-main">API Architecture</h2>
           </div>
-          <button
-            onClick={() => setIsAddModalOpen(true)} 
-            style={{ color: 'var(--project-accent)', borderColor: 'var(--project-accent)' }}
-            className="flex items-center gap-1 text-xs font-mono bg-panel-hover border px-2 py-1 rounded hover:bg-background transition shadow-[0_0_10px_var(--project-glow)]">
-            <Plus size={14} /> New
-          </button>
+          
+          <div className="flex items-center gap-3">
+            {/* THE VIEW TOGGLE */}
+            <div className="flex bg-panel border border-border rounded p-0.5">
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded transition ${viewMode === 'list' ? 'bg-background text-text-main shadow' : 'text-text-muted hover:text-text-main'}`}
+                title="List View"
+              >
+                <List size={14} />
+              </button>
+              <button 
+                onClick={() => setViewMode('graph')}
+                className={`p-1.5 rounded transition ${viewMode === 'graph' ? 'bg-background text-text-main shadow' : 'text-text-muted hover:text-text-main'}`}
+                title="Graph View"
+              >
+                <Network size={14} />
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsAddModalOpen(true)} 
+              style={{ color: 'var(--project-accent)', borderColor: 'var(--project-accent)' }}
+              className="flex items-center gap-1 text-xs font-mono bg-panel-hover border px-2 py-1 rounded hover:bg-background transition shadow-[0_0_10px_var(--project-glow)]">
+              <Plus size={14} /> New
+            </button>
+          </div>
         </div>
 
-        {endpoints?.length === 0 ? (
-          <div className="text-center p-8 border border-dashed border-border rounded text-text-muted font-mono text-xs">
-            No endpoints documented for this microservice.
-          </div>
-        ) : (
-          endpoints?.map((ep) => (
-            <button
-              type="button" 
-              key={ep._id} 
-              onClick={() => setSelectedEndpoint(ep)}
-              className={`w-full text-left p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
-                selectedEndpoint?._id === ep._id 
-                  ? 'bg-panel-hover border-accent-cyan shadow-glow' 
-                  : 'bg-panel border-border hover:border-panel-hover'
-              }`}
-            >
-              <div className="flex items-center gap-3 font-mono text-xs">
-                <span className={`px-2 py-0.5 rounded border text-[10px] font-bold tracking-wide ${getMethodStyle(ep.method)}`}>
-                  {ep.method}
-                </span>
-                <span className="text-text-main font-semibold tracking-tight">{ep.path}</span>
-              </div>
-              <span className="text-[10px] text-text-muted max-w-[120px] truncate">{ep.description}</span>
-            </button>
-          ))
-        )}
+        {/* Dynamic Content Container */}
+        <div className="flex-1 overflow-hidden rounded-lg border border-border bg-[#0A0A0A] relative flex flex-col">
+          {endpoints?.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center text-text-muted font-mono text-xs p-8 text-center border-dashed border-border border m-4 rounded">
+              No endpoints documented. Click 'New' to create a contract.
+            </div>
+          ) : viewMode === 'graph' ? (
+            // Graph View Component
+            <ApiCanvas 
+              endpoints={endpoints} 
+              selectedEndpoint={selectedEndpoint} 
+              setSelectedEndpoint={setSelectedEndpoint} 
+            />
+          ) : (
+            // Classic List View
+            <div className="flex flex-col gap-2 p-2 overflow-y-auto w-full h-full">
+              {endpoints?.map((ep) => (
+                <button
+                  type="button" 
+                  key={ep._id} 
+                  onClick={() => setSelectedEndpoint(ep)}
+                  className={`w-full text-left p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
+                    selectedEndpoint?._id === ep._id 
+                      ? 'bg-panel border-[var(--project-accent)] shadow-[0_0_15px_var(--project-glow)]' 
+                      : 'bg-panel border-border hover:border-panel-hover'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 font-mono text-xs shrink-0">
+                    <span className={`px-2 py-0.5 rounded border text-[10px] font-bold tracking-wide ${getMethodStyle(ep.method)}`}>
+                      {ep.method}
+                    </span>
+                    <span className="text-text-main font-semibold tracking-tight">{ep.path}</span>
+                  </div>
+                  <span className="text-[10px] text-text-muted max-w-[120px] truncate ml-2">{ep.description}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Right Panel: Detailed Contract Inspector */}
@@ -155,4 +190,4 @@ const ApiRegistry = ({projectId}) => {
   )
 }
 
-export default ApiRegistry
+export default ApiRegistry;
