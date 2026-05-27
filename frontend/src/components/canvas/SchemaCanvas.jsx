@@ -91,7 +91,7 @@ export default function SchemaCanvas({ projectId }) {
       }));
       setEdges(formattedEdges);
     }else if(projectData){
-+      setEdges([]);
+      setEdges([]);
     }
   }, [projectData, setEdges]);
 
@@ -165,7 +165,7 @@ export default function SchemaCanvas({ projectId }) {
       <div className="absolute top-4 right-4 z-10 flex gap-3">
         <button 
           onClick={() => setIsAddTableOpen(true)}
-          className="flex items-center gap-2 bg-panel border border-border px-4 py-2 rounded-md font-mono text-xs font-bold text-text-main hover:bg-panel-hover hover:border-accent-amber hover:text-accent-amber transition-all"
+          className="flex items-center gap-2 bg-panel border border-border px-4 py-2 rounded-md font-mono text-xs font-bold text-text-main hover:bg-panel-hover hover:border-[var(--project-accent)] hover:text-[var(--project-accent)] transition-all"
         >
           <Database size={16} />
           ADD TABLE

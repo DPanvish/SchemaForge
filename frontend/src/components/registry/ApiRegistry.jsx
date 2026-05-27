@@ -65,7 +65,7 @@ const ApiRegistry = ({projectId}) => {
       <div className="w-full md:w-2/5 border-r border-border p-4 overflow-y-auto flex flex-col gap-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Terminal size={18} className="text-accent-cyan" />
+            <Terminal size={18} style={{ color: 'var(--project-accent)' }} />
             <h2 className="font-mono text-sm font-bold tracking-wider uppercase text-text-main">API Route Explorer</h2>
           </div>
           <button
