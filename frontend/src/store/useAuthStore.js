@@ -9,9 +9,15 @@ const useAuthStore = create((set) => ({
   },
   
   logout: () => {
-    localStorage.removeItem('userInfo');
-    set({ userInfo: null });
-  },
+    console.log("💥 Executing Nuclear Logout...");
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    set({ user: null, token: null });
+
+    window.location.href = '/';
+  }
 }));
 
 export default useAuthStore;

@@ -32,8 +32,18 @@ const ApiRegistry = ({projectId}) => {
     }
   };
 
-  if(isLoading){
-    return <div className="p-8 text-accent-cyan font-mono">Loading Registry...</div>;
+  if (isLoading) {
+    return (
+      <div className="w-full h-[calc(100vh-64px)] bg-background flex items-center justify-center">
+        <div 
+          style={{ color: 'var(--project-accent)' }} 
+          className="font-mono text-xs tracking-widest animate-pulse flex items-center gap-2"
+        >
+          <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: 'var(--project-accent)' }} />
+          INITIALIZING API NODE FETCH...
+        </div>
+      </div>
+    );
   }
 
   if(!projectId){
@@ -55,12 +65,13 @@ const ApiRegistry = ({projectId}) => {
       <div className="w-full md:w-2/5 border-r border-border p-4 overflow-y-auto flex flex-col gap-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Terminal size={18} className="text-accent-cyan" />
+            <Terminal size={18} style={{ color: 'var(--project-accent)' }} />
             <h2 className="font-mono text-sm font-bold tracking-wider uppercase text-text-main">API Route Explorer</h2>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)} 
-            className="flex items-center gap-1 text-xs font-mono bg-panel-hover border border-border px-2 py-1 rounded text-accent-cyan hover:bg-border transition">
+            style={{ color: 'var(--project-accent)', borderColor: 'var(--project-accent)' }}
+            className="flex items-center gap-1 text-xs font-mono bg-panel-hover border px-2 py-1 rounded hover:bg-background transition shadow-[0_0_10px_var(--project-glow)]">
             <Plus size={14} /> New
           </button>
         </div>
@@ -102,7 +113,9 @@ const ApiRegistry = ({projectId}) => {
                 <span className={`px-2.5 py-1 rounded border text-xs font-bold ${getMethodStyle(selectedEndpoint.method)}`}>
                   {selectedEndpoint.method}
                 </span>
-                <h1 className="text-lg text-text-main font-bold tracking-tight select-all">{selectedEndpoint.path}</h1>
+                <h1 style={{ color: 'var(--project-accent)' }} className="text-lg font-bold font-mono tracking-tight select-all drop-shadow-md">
+                  {selectedEndpoint.path}
+                </h1>
               </div>
               <p className="text-sm text-text-muted ml-1">{selectedEndpoint.description || 'No system description provided.'}</p>
             </div>

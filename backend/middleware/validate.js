@@ -11,9 +11,11 @@ export const validate = (schema) => (req, res, next) => {
 
         next();
     }catch(error){
+        const issues = error.issues || error.errors || [];
+
         return res.status(400).json({
             error: "Validation Failed",
-            details: error.errors.map(e => ({
+            details: issues.map(e => ({
                 field: e.path.slice(1).join('.') || e.path.join('.'),
                 message: e.message,
             }))

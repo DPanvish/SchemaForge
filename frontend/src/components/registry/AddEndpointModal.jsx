@@ -5,6 +5,7 @@ import api from '../../lib/api';
 
 export default function AddEndpointModal({ isOpen, onClose, projectId }) {
   const queryClient = useQueryClient();
+  const projectAccent = 'var(--project-accent)';
   const [method, setMethod] = useState('GET');
   const [path, setPath] = useState('');
   const [description, setDescription] = useState('');
@@ -57,7 +58,7 @@ export default function AddEndpointModal({ isOpen, onClose, projectId }) {
         
         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-panel-header">
           <div className="flex items-center gap-2 text-text-main font-mono font-bold">
-            <Network className="text-accent-amber" size={20} />
+            <Network style={{ color: projectAccent }} size={20} />
             <span>REGISTER API ROUTE</span>
           </div>
           <button onClick={onClose} className="text-text-muted hover:text-[#FF5252] transition">
@@ -74,7 +75,8 @@ export default function AddEndpointModal({ isOpen, onClose, projectId }) {
               <select 
                 value={method}
                 onChange={(e) => setMethod(e.target.value)}
-                className="w-full bg-panel border border-border text-accent-cyan text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-accent-cyan"
+                style={{ color: projectAccent }}
+                className="w-full bg-panel border border-border text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-[var(--project-accent)]"
               >
                 <option value="GET">GET</option>
                 <option value="POST">POST</option>
@@ -90,7 +92,7 @@ export default function AddEndpointModal({ isOpen, onClose, projectId }) {
                 placeholder="e.g., /api/v1/users"
                 value={path}
                 onChange={(e) => setPath(e.target.value)}
-                className="w-full bg-panel border border-border text-text-main text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-accent-cyan transition"
+                className="w-full bg-panel border border-border text-text-main text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-[var(--project-accent)] transition"
               />
             </div>
           </div>
@@ -102,7 +104,7 @@ export default function AddEndpointModal({ isOpen, onClose, projectId }) {
               placeholder="What does this endpoint do?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-panel border border-border text-text-main text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-accent-cyan transition"
+              className="w-full bg-panel border border-border text-text-main text-sm font-mono rounded px-4 py-2 focus:outline-none focus:border-[var(--project-accent)] transition"
             />
           </div>
 
@@ -112,7 +114,7 @@ export default function AddEndpointModal({ isOpen, onClose, projectId }) {
               <textarea 
                 value={requestBody}
                 onChange={(e) => setRequestBody(e.target.value)}
-                className="w-full h-32 bg-[#0E0E0E] border border-border text-[#A8FFB2] text-xs font-mono rounded p-3 focus:outline-none focus:border-accent-amber"
+                className="w-full h-32 bg-[#0E0E0E] border border-border text-[var(--project-accent)] text-xs font-mono rounded p-3 focus:outline-none focus:border-[var(--project-accent)]"
               />
             </div>
             <div className="w-1/2">
@@ -120,7 +122,7 @@ export default function AddEndpointModal({ isOpen, onClose, projectId }) {
               <textarea 
                 value={responseSchema}
                 onChange={(e) => setResponseSchema(e.target.value)}
-                className="w-full h-32 bg-[#0E0E0E] border border-border text-accent-cyan text-xs font-mono rounded p-3 focus:outline-none focus:border-accent-amber"
+                className="w-full h-32 bg-[#0E0E0E] border border-border text-[var(--project-accent)] text-xs font-mono rounded p-3 focus:outline-none focus:border-[var(--project-accent)]"
               />
             </div>
           </div>
@@ -130,7 +132,7 @@ export default function AddEndpointModal({ isOpen, onClose, projectId }) {
           <button 
             onClick={handleSubmit}
             disabled={addEndpointMutation.isPending}
-            className="flex items-center gap-2 bg-accent-amber/10 border border-accent-amber text-accent-amber px-6 py-2 rounded font-mono text-sm font-bold hover:bg-accent-amber hover:text-background transition shadow-[0_0_15px_rgba(255,171,0,0.2)]"
+            className="flex items-center gap-2 bg-[color-mix(in_srgb,var(--project-accent)_10%,transparent)] border border-[var(--project-accent)] text-[var(--project-accent)] px-6 py-2 rounded font-mono text-sm font-bold hover:bg-[var(--project-accent)] hover:text-background transition shadow-[0_0_15px_var(--project-glow)]"
           >
             {addEndpointMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'SAVE ENDPOINT'}
           </button>

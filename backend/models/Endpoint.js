@@ -16,7 +16,8 @@ const endpointSchema = new mongoose.Schema({
     required: true 
   }, 
   description: { 
-    type: String 
+    type: String,
+    default: '' 
   },
   requestBody: { 
     type: Object, 
