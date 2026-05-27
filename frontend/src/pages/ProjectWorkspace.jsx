@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SchemaCanvas from '../components/canvas/SchemaCanvas';
 import ApiRegistry from '../components/registry/ApiRegistry';
+import ProjectSettingsModal from '../components/canvas/ProjectSettingsModal';
 import api from '../lib/api';
-import { LogOut, Terminal, Trash2 } from 'lucide-react';
+import { LogOut, Terminal, Trash2, Settings } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 
 export default function ProjectWorkspace() {
@@ -12,6 +13,7 @@ export default function ProjectWorkspace() {
   const { id } = useParams(); 
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('canvas');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const logout = useAuthStore((state) => state.logout);
 
   const { data: project } = useQuery({
@@ -59,11 +61,28 @@ export default function ProjectWorkspace() {
       className="flex flex-col h-screen w-full bg-background overflow-hidden animate-in fade-in duration-500"
     >
       <header className="h-16 border-b border-border bg-panel flex items-center justify-between px-6 shrink-0 z-10">
-        <div onClick={() => navigate('/')} className="font-mono text-sm font-bold tracking-widest text-text-main cursor-pointer flex items-center gap-2 hover:text-text-muted transition">
-          <Terminal size={16} style={{ color: 'var(--project-accent)' }} />
-          SCHEMA<span style={{ color: 'var(--project-accent)' }}>FORGE</span> // WORKSPACE
+        
+        {/* Left Side: Logo & Settings */}
+        <div className="flex items-center gap-2">
+          <div onClick={() => navigate('/')} className="font-mono text-sm font-bold tracking-widest text-text-main cursor-pointer flex items-center gap-2 hover:text-text-muted transition">
+            <Terminal size={16} style={{ color: 'var(--project-accent)' }} />
+            SCHEMA<span style={{ color: 'var(--project-accent)' }}>FORGE</span>
+          </div>
+          
+          <span className="mx-2 text-border">/</span>
+          <span className="text-text-muted uppercase font-mono text-xs font-bold tracking-wide truncate max-w-[200px]">
+            {project?.name || 'WORKSPACE'}
+          </span>
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-1.5 ml-1 rounded text-text-muted hover:text-[var(--project-accent)] hover:bg-panel-hover transition-colors"
+            title="Workspace Settings"
+          >
+            <Settings size={14} />
+          </button>
         </div>
         
+        {/* Right Side: Tabs & Actions */}
         <div className="flex items-center gap-2">
           <div className="flex gap-2 border border-border rounded p-0.5 bg-background">
             <button 
@@ -89,6 +108,7 @@ export default function ProjectWorkspace() {
               API Contract Registry
             </button>
           </div>
+          
           <button 
             onClick={handleDeleteWorkspace} 
             className="flex items-center gap-1.5 px-3 py-1 text-xs font-mono text-text-muted hover:text-background hover:bg-[#FF5252] border border-transparent hover:border-[#FF5252] rounded transition-all ml-4"
@@ -105,6 +125,13 @@ export default function ProjectWorkspace() {
       <main className="flex-1 overflow-hidden relative">
         {activeTab === 'canvas' ? <SchemaCanvas projectId={id} /> : <ApiRegistry projectId={id} />}
       </main>
+
+      {/* Mounted Settings Modal */}
+      <ProjectSettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        project={project} 
+      />
     </div>
   );
 }

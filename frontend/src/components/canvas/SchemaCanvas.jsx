@@ -170,13 +170,13 @@ export default function SchemaCanvas({ projectId }) {
           <Database size={16} />
           ADD TABLE
         </button>
-        <button 
+        {/* <button 
           onClick={() => setIsExportModalOpen(true)}
           className="flex items-center gap-2 bg-panel border border-accent-cyan/50 shadow-glow px-4 py-2 rounded-md font-mono text-xs font-bold text-accent-cyan hover:bg-panel-hover hover:border-accent-cyan transition-all"
         >
           <Code2 size={16} />
           GENERATE CODE
-        </button>
+        </button> */}
       </div>
 
       <ReactFlow
