@@ -16,6 +16,10 @@ export default function ProjectWorkspace() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const logout = useAuthStore((state) => state.logout);
 
+  const [globalTheme, setGlobalTheme] = useState(() => {
+    return localStorage.getItem('schemaforge-theme') || '#00E5FF';
+  });
+
   const { data: project } = useQuery({
     queryKey: ['project', id],
     queryFn: async () => {
@@ -50,14 +54,10 @@ export default function ProjectWorkspace() {
     }
   };
 
-  let projectAccent = project?.themeColor || '#00E5FF';
-  if (projectAccent === '#0A0A0A') {
-    projectAccent = '#00E5FF'; 
-  }
-
   return (
     <div 
-      style={{ '--project-accent': projectAccent, '--project-glow': `${projectAccent}33` }} 
+      // 👇 UPDATED: Now uses globalTheme exclusively
+      style={{ '--project-accent': globalTheme, '--project-glow': `${globalTheme}33` }} 
       className="flex flex-col h-screen w-full bg-background overflow-hidden animate-in fade-in duration-500"
     >
       <header className="h-16 border-b border-border bg-panel flex items-center justify-between px-6 shrink-0 z-10">
@@ -126,11 +126,13 @@ export default function ProjectWorkspace() {
         {activeTab === 'canvas' ? <SchemaCanvas projectId={id} /> : <ApiRegistry projectId={id} />}
       </main>
 
-      {/* Mounted Settings Modal */}
+      {/* 👇 UPDATED: Passing the global theme controllers */}
       <ProjectSettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
         project={project} 
+        globalTheme={globalTheme}
+        setGlobalTheme={setGlobalTheme}
       />
     </div>
   );

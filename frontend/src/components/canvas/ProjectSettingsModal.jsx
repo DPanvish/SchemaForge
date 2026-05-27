@@ -4,7 +4,8 @@ import { X, Settings, Loader2 } from 'lucide-react';
 import api from '../../lib/api';
 import ColorPicker from './ColorPicker';
 
-export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
+// 👇 UPDATED: Added globalTheme and setGlobalTheme props
+export default function ProjectSettingsModal({ isOpen, onClose, project, globalTheme, setGlobalTheme }) {
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -16,9 +17,10 @@ export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
     if (project) {
       setName(project.name || '');
       setDescription(project.description || '');
-      setThemeColor(project.themeColor === '#0A0A0A' ? '#00E5FF' : project.themeColor || '#00E5FF');
+      // 👇 UPDATED: Read from Global Theme
+      setThemeColor(globalTheme);
     }
-  }, [project]);
+  }, [project, globalTheme]);
 
   const updateProjectMutation = useMutation({
     mutationFn: async (updatedData) => {
@@ -26,7 +28,6 @@ export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
       return res.data;
     },
     onSuccess: () => {
-      // Instantly triggers a re-render of the workspace with the new color!
       queryClient.invalidateQueries({ queryKey: ['project', project._id] });
       onClose();
     },
@@ -36,7 +37,11 @@ export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return setError('Project name is required');
-    updateProjectMutation.mutate({ name, description, themeColor });
+    
+    localStorage.setItem('schemaforge-theme', themeColor);
+    setGlobalTheme(themeColor);
+
+    updateProjectMutation.mutate({ name, description });
   };
 
   if (!isOpen || !project) return null;
@@ -83,7 +88,7 @@ export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
           {/* Master Workspace Color Selector */}
           <ColorPicker selectedColor={themeColor} onChange={setThemeColor} label="GLOBAL WORKSPACE ACCENT" />
           <p className="text-[10px] text-text-muted font-mono mt-1 opacity-70">
-            This color dictates glowing effects, API registry highlights, and hover paths.
+            This color preference persists globally across your entire account on this device.
           </p>
         </div>
 
@@ -103,5 +108,3 @@ export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
     </div>
   );
 }
-
-export default ProjectSettingsModal;
