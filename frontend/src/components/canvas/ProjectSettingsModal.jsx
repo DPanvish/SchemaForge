@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Settings, Loader2 } from 'lucide-react';
 import api from '../../lib/api';
+import ColorPicker from './ColorPicker';
 
 export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
   const queryClient = useQueryClient();
@@ -9,9 +10,6 @@ export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
   const [description, setDescription] = useState('');
   const [themeColor, setThemeColor] = useState('#00E5FF');
   const [error, setError] = useState('');
-
-  // The premium workspace palette
-  const themePresets = ['#00E5FF', '#A8FFB2', '#FFAB00', '#FF5252', '#E040FB', '#90CAF9'];
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -83,32 +81,10 @@ export const ProjectSettingsModal = ({ isOpen, onClose, project }) => {
           </div>
 
           {/* Master Workspace Color Selector */}
-          <div className="mb-2">
-            <label className="block text-xs font-mono text-text-muted mb-2">GLOBAL ACCENT THEME</label>
-            <div className="flex gap-2 items-center bg-panel p-3 rounded border border-border">
-              {themePresets.map(c => (
-                <button 
-                  key={c} 
-                  type="button" 
-                  onClick={() => setThemeColor(c)}
-                  style={{ backgroundColor: c }}
-                  className={`w-6 h-6 rounded-full transition-all duration-200 ${
-                    themeColor === c ? 'scale-125 ring-2 ring-text-main shadow-lg' : 'opacity-60 hover:opacity-100'
-                  }`}
-                />
-              ))}
-              <div className="w-px h-6 bg-border mx-2" />
-              <input 
-                type="color" 
-                value={themeColor} 
-                onChange={(e) => setThemeColor(e.target.value)} 
-                className="bg-transparent border-none w-8 h-8 cursor-pointer" 
-              />
-            </div>
-            <p className="text-[10px] text-text-muted font-mono mt-2 opacity-70">
-              This color dictates the primary glowing effects, API registry highlights, and hover paths across the entire microservice.
-            </p>
-          </div>
+          <ColorPicker selectedColor={themeColor} onChange={setThemeColor} label="GLOBAL WORKSPACE ACCENT" />
+          <p className="text-[10px] text-text-muted font-mono mt-1 opacity-70">
+            This color dictates glowing effects, API registry highlights, and hover paths.
+          </p>
         </div>
 
         {/* Footer */}

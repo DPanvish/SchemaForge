@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Plus, Trash2, Settings2, Loader2, AlertTriangle } from 'lucide-react';
 import api from '../../lib/api';
+import ColorPicker from './ColorPicker';
 
 export default function EditTableModal({ isOpen, onClose, projectId, nodeData }) {
   const queryClient = useQueryClient();
@@ -11,7 +12,6 @@ export default function EditTableModal({ isOpen, onClose, projectId, nodeData })
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [nodeColor, setNodeColor] = useState('#00E5FF');
-  const colorPresets = ['#00E5FF', '#FFAB00', '#A8FFB2', '#FF5252', '#E040FB', '#90CAF9'];
 
   useEffect(() => {
     if (nodeData) {
@@ -107,29 +107,7 @@ export default function EditTableModal({ isOpen, onClose, projectId, nodeData })
             />
           </div>
 
-          <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-200">
-            <label className="block text-xs font-mono text-text-muted mb-2">NODE ACCENT COLOR</label>
-            <div className="flex gap-2 items-center bg-background/50 p-3 rounded border border-border">
-              {colorPresets.map(c => (
-                <button 
-                  key={c} 
-                  type="button" 
-                  onClick={() => setNodeColor(c)}
-                  style={{ backgroundColor: c }}
-                  className={`w-6 h-6 rounded-full transition-transform duration-200 ${
-                    nodeColor === c ? 'scale-125 ring-2 ring-text-main shadow-lg' : 'opacity-60 hover:opacity-100'
-                  }`}
-                />
-              ))}
-              <div className="w-px h-6 bg-border mx-2" />
-              <input 
-                type="color" 
-                value={nodeColor} 
-                onChange={(e) => setNodeColor(e.target.value)} 
-                className="bg-transparent border-none w-8 h-8 cursor-pointer" 
-              />
-            </div>
-          </div>
+          <ColorPicker selectedColor={nodeColor} onChange={setNodeColor} label="COLLECTION ACCENT COLOR" />
 
           <div className="mb-4 flex items-center justify-between">
             <label className="block text-xs font-mono text-text-muted">DATA SCHEMA</label>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Plus, Trash2, Database, Loader2 } from 'lucide-react';
+import ColorPicker from './ColorPicker';
 import api from '../../lib/api';
 
 export default function AddTableModal({ isOpen, onClose, projectId }) {
@@ -9,7 +10,7 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
   const [fields, setFields] = useState([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true, ofType: 'String' }]);
   const [error, setError] = useState('');
   const [nodeColor, setNodeColor] = useState('#00E5FF');
-  const colorPresets = ['#00E5FF', '#FFAB00', '#A8FFB2', '#FF5252', '#E040FB', '#90CAF9'];
+
 
   const addTableMutation = useMutation({
     mutationFn: async (newTable) => {
@@ -71,19 +72,7 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
 
         <div className="p-6 overflow-y-auto max-h-[70vh]">
           {error && <div className="mb-4 p-2 bg-[#FF5252]/10 border border-[#FF5252]/20 text-[#FF5252] text-xs font-mono rounded">{error}</div>}
-          <div className="mb-4">
-            <label className="block text-xs font-mono text-text-muted mb-2">NODE ACCENT COLOR</label>
-            <div className="flex gap-2 items-center">
-              {colorPresets.map(c => (
-                <button 
-                  key={c} type="button" onClick={() => setNodeColor(c)}
-                  style={{ backgroundColor: c }}
-                  className={`w-6 h-6 rounded-full transition-transform ${nodeColor === c ? 'scale-125 ring-2 ring-text-main' : 'opacity-60 hover:opacity-100'}`}
-                />
-              ))}
-              <input type="color" value={nodeColor} onChange={(e) => setNodeColor(e.target.value)} className="bg-transparent border-none w-8 h-8 cursor-pointer ml-2" />
-            </div>
-          </div>
+          <ColorPicker selectedColor={nodeColor} onChange={setNodeColor} label="COLLECTION ACCENT COLOR" />
 
           <div className="mb-6">
             <label className="block text-xs font-mono text-text-muted mb-2">TABLE / COLLECTION NAME</label>
