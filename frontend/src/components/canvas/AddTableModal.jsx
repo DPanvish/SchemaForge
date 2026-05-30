@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Plus, Trash2, Database, Loader2 } from 'lucide-react';
+import { X, Plus, Trash2, Database, Loader2, AlertCircle } from 'lucide-react';
 import ColorPicker from './ColorPicker';
 import api from '../../lib/api';
 
@@ -12,6 +12,14 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
   const [error, setError] = useState('');
   const [nodeColor, setNodeColor] = useState('#00E5FF');
 
+  useEffect(() => {
+    if (!isOpen) {
+      setTableName('');
+      setFields([{ name: 'id', dataType: 'String', isRequired: true, isUnique: true, ofType: 'String' }]);
+      setError('');
+      setNodeColor(localStorage.getItem('schemaforge-theme') || '#00E5FF');
+    }
+  }, [isOpen]);
 
   const addTableMutation = useMutation({
     mutationFn: async (newTable) => {
@@ -72,7 +80,6 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[70vh]">
-          {error && <div className="mb-4 p-2 bg-[#FF5252]/10 border border-[#FF5252]/20 text-[#FF5252] text-xs font-mono rounded">{error}</div>}
           <ColorPicker selectedColor={nodeColor} onChange={setNodeColor} label="COLLECTION ACCENT COLOR" />
 
           <div className="mb-6">
@@ -104,7 +111,7 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
                   onChange={(e) => updateField(index, 'name', e.target.value)}
                   className="flex-1 bg-background border border-border text-text-main text-sm font-mono rounded px-3 py-1.5 focus:outline-none focus:border-[var(--project-accent)]"
                 />
-                {/* Main Data Type Dropdown */}
+
                 <div className="flex items-center gap-2">
                   <select 
                     value={field.dataType}
@@ -158,6 +165,11 @@ export default function AddTableModal({ isOpen, onClose, projectId }) {
         </div>
 
         <div className="p-4 border-t border-border bg-panel-header flex justify-end">
+          {error && (
+            <div className="p-2 bg-[#FF5252]/10 border border-[#FF5252]/20 text-[#FF5252] text-xs font-mono rounded flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+              <AlertCircle size={14} /> {error}
+            </div>
+          )}
           <button 
             onClick={handleSubmit}
             disabled={addTableMutation.isPending}
