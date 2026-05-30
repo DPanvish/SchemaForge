@@ -1,14 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { Terminal, ShieldAlert, Plus, Layers, Network, List } from 'lucide-react';
+import { Terminal, ShieldAlert, Plus, Layers, Network, List, Trash2, Edit2 } from 'lucide-react';
 import AddEndpointModal from './AddEndpointModal';
+import EditEndpointModal from './EditEndpointModal'; // NEW IMPORT
 import ApiCanvas from './ApiCanvas'; 
 import api from "../../lib/api";
 
 const ApiRegistry = ({projectId}) => {
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState('list'); // <--- The new Toggle State
+  const [viewMode, setViewMode] = useState('list'); 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setSelectedEndpoint(null);
@@ -23,11 +27,20 @@ const ApiRegistry = ({projectId}) => {
     enabled: !!projectId,
   });
 
+  const deleteEndpointMutation = useMutation({
+    mutationFn: async (id) => await api.delete(`/endpoints/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["endpoints", projectId] });
+      setSelectedEndpoint(null); 
+    }
+  });
+
   const getMethodStyle = (method) => {
     switch (method) {
       case 'GET': return 'text-[#4CAF50] bg-[#4CAF50]/10 border-[#4CAF50]/20';
       case 'POST': return 'text-accent-amber bg-accent-amber/10 border-accent-amber/20';
       case 'PUT': return 'text-accent-cyan bg-accent-cyan/10 border-accent-cyan/20';
+      case 'PATCH': return 'text-[#E040FB] bg-[#E040FB]/10 border-[#E040FB]/20'; // Added PATCH!
       case 'DELETE': return 'text-[#FF5252] bg-[#FF5252]/10 border-[#FF5252]/20';
       default: return 'text-text-muted bg-panel-hover border-border';
     }
@@ -36,10 +49,7 @@ const ApiRegistry = ({projectId}) => {
   if (isLoading) {
     return (
       <div className="w-full h-[calc(100vh-64px)] bg-background flex items-center justify-center">
-        <div 
-          style={{ color: 'var(--project-accent)' }} 
-          className="font-mono text-xs tracking-widest animate-pulse flex items-center gap-2"
-        >
+        <div style={{ color: 'var(--project-accent)' }} className="font-mono text-xs tracking-widest animate-pulse flex items-center gap-2">
           <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: 'var(--project-accent)' }} />
           INITIALIZING API NODE FETCH...
         </div>
@@ -71,20 +81,11 @@ const ApiRegistry = ({projectId}) => {
           </div>
           
           <div className="flex items-center gap-3">
-            {/* THE VIEW TOGGLE */}
             <div className="flex bg-panel border border-border rounded p-0.5">
-              <button 
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded transition ${viewMode === 'list' ? 'bg-background text-text-main shadow' : 'text-text-muted hover:text-text-main'}`}
-                title="List View"
-              >
+              <button onClick={() => setViewMode('list')} className={`p-1.5 rounded transition ${viewMode === 'list' ? 'bg-background text-text-main shadow' : 'text-text-muted hover:text-text-main'}`} title="List View">
                 <List size={14} />
               </button>
-              <button 
-                onClick={() => setViewMode('graph')}
-                className={`p-1.5 rounded transition ${viewMode === 'graph' ? 'bg-background text-text-main shadow' : 'text-text-muted hover:text-text-main'}`}
-                title="Graph View"
-              >
+              <button onClick={() => setViewMode('graph')} className={`p-1.5 rounded transition ${viewMode === 'graph' ? 'bg-background text-text-main shadow' : 'text-text-muted hover:text-text-main'}`} title="Graph View">
                 <Network size={14} />
               </button>
             </div>
@@ -105,24 +106,14 @@ const ApiRegistry = ({projectId}) => {
               No endpoints documented. Click 'New' to create a contract.
             </div>
           ) : viewMode === 'graph' ? (
-            // Graph View Component
-            <ApiCanvas 
-              endpoints={endpoints} 
-              selectedEndpoint={selectedEndpoint} 
-              setSelectedEndpoint={setSelectedEndpoint} 
-            />
+            <ApiCanvas endpoints={endpoints} selectedEndpoint={selectedEndpoint} setSelectedEndpoint={setSelectedEndpoint} />
           ) : (
-            // Classic List View
             <div className="flex flex-col gap-2 p-2 overflow-y-auto w-full h-full">
               {endpoints?.map((ep) => (
                 <button
-                  type="button" 
-                  key={ep._id} 
-                  onClick={() => setSelectedEndpoint(ep)}
+                  type="button" key={ep._id} onClick={() => setSelectedEndpoint(ep)}
                   className={`w-full text-left p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
-                    selectedEndpoint?._id === ep._id 
-                      ? 'bg-panel border-[var(--project-accent)] shadow-[0_0_15px_var(--project-glow)]' 
-                      : 'bg-panel border-border hover:border-panel-hover'
+                    selectedEndpoint?._id === ep._id ? 'bg-panel border-[var(--project-accent)] shadow-[0_0_15px_var(--project-glow)]' : 'bg-panel border-border hover:border-panel-hover'
                   }`}
                 >
                   <div className="flex items-center gap-3 font-mono text-xs shrink-0">
@@ -131,7 +122,9 @@ const ApiRegistry = ({projectId}) => {
                     </span>
                     <span className="text-text-main font-semibold tracking-tight">{ep.path}</span>
                   </div>
-                  <span className="text-[10px] text-text-muted max-w-[120px] truncate ml-2">{ep.description}</span>
+                  <span className="text-[10px] text-text-muted max-w-[120px] truncate ml-2">
+                    {ep.middleware ? `🛡️ ${ep.middleware}` : ep.description}
+                  </span>
                 </button>
               ))}
             </div>
@@ -142,20 +135,51 @@ const ApiRegistry = ({projectId}) => {
       {/* Right Panel: Detailed Contract Inspector */}
       <div className="flex-1 p-6 overflow-y-auto bg-[#0E0E0E]">
         {selectedEndpoint ? (
-          <div className="flex flex-col gap-6">
-            <div>
-              <div className="flex items-center gap-3 font-mono mb-2">
-                <span className={`px-2.5 py-1 rounded border text-xs font-bold ${getMethodStyle(selectedEndpoint.method)}`}>
-                  {selectedEndpoint.method}
-                </span>
-                <h1 style={{ color: 'var(--project-accent)' }} className="text-lg font-bold font-mono tracking-tight select-all drop-shadow-md">
-                  {selectedEndpoint.path}
-                </h1>
+          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            
+            {/* Header Block with Actions */}
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-3 font-mono mb-2">
+                  <span className={`px-2.5 py-1 rounded border text-xs font-bold ${getMethodStyle(selectedEndpoint.method)}`}>
+                    {selectedEndpoint.method}
+                  </span>
+                  <h1 style={{ color: 'var(--project-accent)' }} className="text-lg font-bold font-mono tracking-tight select-all drop-shadow-md">
+                    {selectedEndpoint.path}
+                  </h1>
+                </div>
+
+                {selectedEndpoint.middleware && (
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-[#FFAB00]/10 border border-[#FFAB00]/30 text-[#FFAB00] text-[10px] font-mono rounded mb-2 ml-1">
+                    <ShieldAlert size={12} /> INTERCEPTED BY: {selectedEndpoint.middleware}
+                  </div>
+                )}
+                
+                <p className="text-sm text-text-muted ml-1">{selectedEndpoint.description || 'No system description provided.'}</p>
               </div>
-              <p className="text-sm text-text-muted ml-1">{selectedEndpoint.description || 'No system description provided.'}</p>
+
+              <div className="flex gap-2 shrink-0">
+                <button 
+                  onClick={() => setIsEditModalOpen(true)} 
+                  className="p-2 text-text-muted hover:text-[var(--project-accent)] hover:border-[var(--project-accent)] bg-panel border border-border rounded transition"
+                  title="Edit Contract"
+                >
+                  <Edit2 size={14} />
+                </button>
+                <button 
+                  onClick={() => {
+                    if(window.confirm("CRITICAL WARNING:\n\nDelete this API contract permanently?")) {
+                      deleteEndpointMutation.mutate(selectedEndpoint._id);
+                    }
+                  }} 
+                  className="p-2 text-text-muted hover:text-[#FF5252] hover:bg-[#FF5252]/10 hover:border-[#FF5252] bg-panel border border-border rounded transition"
+                  title="Purge Contract"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
 
-            {/* Request Schema Blueprint Block */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 text-xs font-mono text-text-muted">
                 <Layers size={14} />
@@ -166,7 +190,6 @@ const ApiRegistry = ({projectId}) => {
               </pre>
             </div>
 
-            {/* Expected Response Payload Block */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 text-xs font-mono text-text-muted">
                 <ShieldAlert size={14} />
@@ -186,6 +209,13 @@ const ApiRegistry = ({projectId}) => {
       </div>
       
       <AddEndpointModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} projectId={projectId} />
+      
+      <EditEndpointModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        projectId={projectId} 
+        endpointData={selectedEndpoint} 
+      />
     </div>
   )
 }

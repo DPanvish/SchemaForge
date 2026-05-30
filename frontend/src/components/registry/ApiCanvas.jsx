@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import ReactFlow, { Background, Controls, MarkerType, Handle, Position } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Layers, Zap } from 'lucide-react';
+import { Layers } from 'lucide-react'; 
 
-
-// The Central Hub Node (e.g., "/api/auth")
+// Central Router Hub
 const RouterNode = ({ data }) => (
   <div 
     className="bg-panel border-2 rounded-xl p-4 shadow-[0_0_20px_var(--project-glow)] animate-in zoom-in duration-300"
@@ -18,6 +17,26 @@ const RouterNode = ({ data }) => (
       <span className="font-mono text-sm font-bold text-text-main tracking-wider">{data.label}</span>
       <span className="text-[10px] text-text-muted font-mono uppercase tracking-widest">Router Hub</span>
     </div>
+  </div>
+);
+
+// The Redesigned Generic Middleware Node
+const MiddlewareNode = ({ data }) => (
+  <div 
+    className="rounded-full px-4 py-1.5 flex items-center gap-2 border shadow-[0_0_15px_var(--project-glow)] animate-in fade-in slide-in-from-top-4 backdrop-blur-md"
+    style={{ 
+      backgroundColor: 'color-mix(in srgb, var(--project-accent) 10%, transparent)', 
+      borderColor: 'var(--project-accent)',
+      color: 'var(--project-accent)'
+    }}
+  >
+    <Handle type="target" position={Position.Top} className="opacity-0" />
+    <div 
+      className="w-1.5 h-1.5 rounded-full animate-pulse" 
+      style={{ backgroundColor: 'var(--project-accent)', boxShadow: '0 0 8px var(--project-accent)' }} 
+    />
+    <span className="font-mono text-[10px] font-bold tracking-widest uppercase">{data.label}</span>
+    <Handle type="source" position={Position.Bottom} className="opacity-0" />
   </div>
 );
 
@@ -42,10 +61,9 @@ const EndpointNode = ({ data }) => {
   );
 };
 
-const nodeTypes = { router: RouterNode, endpoint: EndpointNode };
+const nodeTypes = { router: RouterNode, endpoint: EndpointNode, middleware: MiddlewareNode };
 
 // --- MAIN COMPONENT ---
-
 export default function ApiCanvas({ endpoints, selectedEndpoint, setSelectedEndpoint }) {
   
   const getMethodStyle = (method) => {
@@ -53,75 +71,89 @@ export default function ApiCanvas({ endpoints, selectedEndpoint, setSelectedEndp
       case 'GET': return 'text-[#4CAF50] bg-[#4CAF50]/10 border-[#4CAF50]/20';
       case 'POST': return 'text-[#FFAB00] bg-[#FFAB00]/10 border-[#FFAB00]/20';
       case 'PUT': return 'text-[#00E5FF] bg-[#00E5FF]/10 border-[#00E5FF]/20';
+      case 'PATCH': return 'text-[#E040FB] bg-[#E040FB]/10 border-[#E040FB]/20';
       case 'DELETE': return 'text-[#FF5252] bg-[#FF5252]/10 border-[#FF5252]/20';
       default: return 'text-text-muted bg-panel border-border';
     }
   };
 
-  // The Layout Math Engine
   const { nodes, edges } = useMemo(() => {
     if (!endpoints || endpoints.length === 0) return { nodes: [], edges: [] };
 
-    // Group endpoints by Base Path
     const hubs = {};
     endpoints.forEach(ep => {
       const parts = ep.path.split('/').filter(Boolean);
       const basePath = parts.length > 1 ? `/${parts[0]}/${parts[1]}` : `/${parts[0] || ''}`;
-      
       if (!hubs[basePath]) hubs[basePath] = [];
       hubs[basePath].push(ep);
     });
 
     const generatedNodes = [];
     const generatedEdges = [];
-    
-    let hubOffsetX = 0; // Spacing between different hubs
+    let hubOffsetX = 0; 
 
-    // Build the Graph
     Object.entries(hubs).forEach(([hubPath, hubEndpoints], hubIndex) => {
       const hubId = `hub-${hubIndex}`;
       
       generatedNodes.push({
-        id: hubId,
-        type: 'router',
-        position: { x: hubOffsetX, y: 50 },
-        data: { label: hubPath },
-        draggable: true,
+        id: hubId, type: 'router', position: { x: hubOffsetX, y: 50 }, data: { label: hubPath }, draggable: true,
       });
 
-      // Create Endpoint Nodes connected to this hub
-      hubEndpoints.forEach((ep, epIndex) => {
-        const epId = `ep-${ep._id}`;
-        
+      const middlewares = [...new Set(hubEndpoints.map(ep => ep.middleware).filter(Boolean))];
+      
+      middlewares.forEach((mwName, mwIndex) => {
+        const mwId = `mw-${hubId}-${mwName}`;
+        const shieldX = hubOffsetX + ((mwIndex + 1) * 260); 
+
         generatedNodes.push({
-          id: epId,
-          type: 'endpoint',
-          // Stagger them downward vertically
-          position: { x: hubOffsetX, y: 250 + (epIndex * 80) }, 
-          data: { 
-            method: ep.method, 
-            path: ep.path,
-            methodStyle: getMethodStyle(ep.method),
-            isSelected: selectedEndpoint?._id === ep._id,
-            onClick: () => setSelectedEndpoint(ep)
-          },
-          draggable: true,
+          id: mwId, type: 'middleware', 
+          position: { x: shieldX, y: 180 }, 
+          data: { label: mwName }, draggable: true,
         });
-
-        // Draw the connecting wire
+        
         generatedEdges.push({
-          id: `e-${hubId}-${epId}`,
-          source: hubId,
-          target: epId,
-          type: 'smoothstep',
-          animated: true, // Make the data flow animation!
-          style: { stroke: 'var(--project-accent, #00E5FF)', strokeWidth: 2, opacity: 0.6 },
-          markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--project-accent, #00E5FF)' },
+          id: `e-hub-to-${mwId}`, source: hubId, target: mwId, type: 'smoothstep', animated: true,
+          style: { stroke: 'var(--project-accent)', strokeWidth: 2, opacity: 0.6 }, 
+          markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--project-accent)' },
         });
       });
 
-      // Move the X offset for the next Hub so they don't overlap
-      hubOffsetX += 350; 
+      const columnYTracker = { public: 320 }; 
+      middlewares.forEach(mw => columnYTracker[mw] = 320); 
+
+      hubEndpoints.forEach((ep) => {
+        const epId = `ep-${ep._id}`;
+        let targetX;
+        let targetY;
+
+        if (ep.middleware) {
+          const mwIndex = middlewares.indexOf(ep.middleware);
+          targetX = hubOffsetX + ((mwIndex + 1) * 260); 
+          targetY = columnYTracker[ep.middleware];
+          columnYTracker[ep.middleware] += 80; 
+        } else {
+          targetX = hubOffsetX; 
+          targetY = columnYTracker.public;
+          columnYTracker.public += 80; 
+        }
+
+        generatedNodes.push({
+          id: epId, type: 'endpoint', position: { x: targetX, y: targetY },
+          data: { method: ep.method, path: ep.path, methodStyle: getMethodStyle(ep.method), isSelected: selectedEndpoint?._id === ep._id, onClick: () => setSelectedEndpoint(ep) }, draggable: true,
+        });
+
+        // Wires from Hub/Middleware to Endpoint
+        generatedEdges.push({
+          id: ep.middleware ? `e-mw-${ep.middleware}-to-${epId}` : `e-hub-to-${epId}`, 
+          source: ep.middleware ? `mw-${hubId}-${ep.middleware}` : hubId, 
+          target: epId, type: 'smoothstep', animated: true,
+          style: { stroke: 'var(--project-accent)', strokeWidth: 2, opacity: 0.6 },
+          markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--project-accent)' },
+        });
+      });
+
+      const totalColumnsInThisHub = middlewares.length + 1; 
+      hubOffsetX += (totalColumnsInThisHub * 350); 
     });
 
     return { nodes: generatedNodes, edges: generatedEdges };
@@ -129,15 +161,7 @@ export default function ApiCanvas({ endpoints, selectedEndpoint, setSelectedEndp
 
   return (
     <div className="w-full h-full bg-[#0A0A0A]">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        nodesDraggable={false}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
-        proOptions={{ hideAttribution: true }} // Hides the React Flow watermark for a pro look
-      >
+      <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} nodesDraggable={false} fitView fitViewOptions={{ padding: 0.2 }} proOptions={{ hideAttribution: true }}>
         <Background color="#333" gap={16} size={1} />
         <Controls className="bg-panel border-border fill-text-main" showInteractive={false} />
       </ReactFlow>

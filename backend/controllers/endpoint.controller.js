@@ -7,6 +7,7 @@ export const endpointValidationSchema = z.object({
     projectId: z.string().min(1, "Project ID is required"),
     method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
     path: z.string().min(1, "Route path is required").startsWith("/", "Path must start with a '/'"),
+    middleware: z.string().optional(),
     description: z.string().optional(),
     requestBody: z.any().optional(), 
     responseSchema: z.any().optional(),
@@ -42,6 +43,7 @@ export const createEndpoint = async (req, res) => {
       project: projectId,
       method,
       path,
+      middleware: req.body.middleware || '',
       description,
       requestBody: parsedRequest || {},
       responseSchema: parsedResponse || {},
@@ -55,6 +57,26 @@ export const createEndpoint = async (req, res) => {
     if (error?.name === "CastError") {
       return res.status(400).json({ error: "Invalid projectId" });
     }
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// @desc    Update an endpoint
+// @route   PUT /api/endpoints/:id
+export const updateEndpoint = async (req, res) => {
+  try {
+    const { method, path, description, requestBody, responseSchema, middleware } = req.body;
+    
+    const parsedRequest = typeof requestBody === 'string' ? JSON.parse(requestBody || '{}') : requestBody;
+    const parsedResponse = typeof responseSchema === 'string' ? JSON.parse(responseSchema || '{}') : responseSchema;
+
+    const updated = await Endpoint.findByIdAndUpdate(
+      req.params.id, 
+      { method, path, description, requestBody: parsedRequest, responseSchema: parsedResponse, middleware },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
     res.status(500).json({ error: "Server Error" });
   }
 };

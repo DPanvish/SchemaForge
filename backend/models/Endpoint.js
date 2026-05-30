@@ -15,6 +15,10 @@ const endpointSchema = new mongoose.Schema({
     type: String, 
     required: true 
   }, 
+  middleware: {
+    type: String,
+    default: ''
+  },
   description: { 
     type: String,
     default: '' 
