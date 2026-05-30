@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import { Terminal, ShieldAlert, Plus, Layers, Network, List, Trash2, Edit2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Terminal, ShieldAlert, Plus, Layers, Network, List, Trash2, Edit2, ArrowRight } from 'lucide-react';
 import AddEndpointModal from './AddEndpointModal';
-import EditEndpointModal from './EditEndpointModal'; // NEW IMPORT
+import EditEndpointModal from './EditEndpointModal'; 
 import ApiCanvas from './ApiCanvas'; 
 import api from "../../lib/api";
 
@@ -40,7 +40,7 @@ const ApiRegistry = ({projectId}) => {
       case 'GET': return 'text-[#4CAF50] bg-[#4CAF50]/10 border-[#4CAF50]/20';
       case 'POST': return 'text-accent-amber bg-accent-amber/10 border-accent-amber/20';
       case 'PUT': return 'text-accent-cyan bg-accent-cyan/10 border-accent-cyan/20';
-      case 'PATCH': return 'text-[#E040FB] bg-[#E040FB]/10 border-[#E040FB]/20'; // Added PATCH!
+      case 'PATCH': return 'text-[#E040FB] bg-[#E040FB]/10 border-[#E040FB]/20';
       case 'DELETE': return 'text-[#FF5252] bg-[#FF5252]/10 border-[#FF5252]/20';
       default: return 'text-text-muted bg-panel-hover border-border';
     }
@@ -149,9 +149,30 @@ const ApiRegistry = ({projectId}) => {
                   </h1>
                 </div>
 
+                {/* PIPELINE BADGE */}
                 {selectedEndpoint.middleware && (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-[#FFAB00]/10 border border-[#FFAB00]/30 text-[#FFAB00] text-[10px] font-mono rounded mb-2 ml-1">
-                    <ShieldAlert size={12} /> INTERCEPTED BY: {selectedEndpoint.middleware}
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2 ml-1">
+                    <span className="text-[10px] font-mono text-text-muted mr-1 tracking-widest">PIPELINE:</span>
+                    
+                    {selectedEndpoint.middleware.split(',').map((mw, index, arr) => (
+                      <React.Fragment key={index}>
+                        <div 
+                          className="inline-flex items-center gap-2 px-2 py-0.5 border text-[10px] font-mono rounded shadow-[0_0_10px_var(--project-glow)] animate-in fade-in zoom-in"
+                          style={{ 
+                            backgroundColor: 'color-mix(in srgb, var(--project-accent) 10%, transparent)', 
+                            borderColor: 'color-mix(in srgb, var(--project-accent) 30%, transparent)',
+                            color: 'var(--project-accent)'
+                          }}
+                        >
+                          <div className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: 'var(--project-accent)' }} /> 
+                          {mw.trim()}
+                        </div>
+                        
+                        {index < arr.length - 1 && (
+                          <ArrowRight size={12} className="text-border" />
+                        )}
+                      </React.Fragment>
+                    ))}
                   </div>
                 )}
                 
